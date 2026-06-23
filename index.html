@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="PixelCraft — 纯前端在线图片处理工具：压缩、格式转换、批量打包，全部在浏览器本地完成，隐私无忧。" />
+<title>PixelCraft · 极简图片处理工具</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: 'var(--ink)',
+          panel: 'var(--panel)',
+          surface: 'var(--surface)',
+          line: 'var(--line)',
+          fg: 'var(--fg)',
+          muted: 'var(--muted)',
+          faint: 'var(--faint)',
+          accent: 'var(--accent)',
+          grape: 'var(--grape)',
+        },
+        fontFamily: {
+          display: ['Sora', 'system-ui', 'sans-serif'],
+          sans: ['Manrope', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        animation: {
+          blob: 'blob 22s ease-in-out infinite',
+          'fade-up': 'fadeUp .7s cubic-bezier(.22,1,.36,1) both',
+          shimmer: 'shimmer 2.4s linear infinite',
+        },
+        keyframes: {
+          blob: {
+            '0%,100%': { transform: 'translate(0,0) scale(1)' },
+            '33%': { transform: 'translate(40px,-30px) scale(1.12)' },
+            '66%': { transform: 'translate(-30px,25px) scale(.92)' },
+          },
+          fadeUp: {
+            '0%': { opacity: '0', transform: 'translateY(20px)' },
+            '100%': { opacity: '1', transform: 'translateY(0)' },
+          },
+          shimmer: {
+            '0%': { backgroundPosition: '-200% 0' },
+            '100%': { backgroundPosition: '200% 0' },
+          },
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  :root {
+    --ink: #08080A;
+    --panel: #0E0E12;
+    --surface: rgba(255, 255, 255, .045);
+    --surface-strong: rgba(18, 18, 22, .72);
+    --line: rgba(255, 255, 255, .09);
+    --line-strong: rgba(255, 255, 255, .16);
+    --fg: #FAFAFA;
+    --muted: rgba(250, 250, 250, .58);
+    --faint: rgba(250, 250, 250, .36);
+    --accent: #7CFFB2;
+    --accent-soft: #A6FFCE;
+    --accent-glow: rgba(124, 255, 178, .45);
+    --grape: #A78BFA;
+    --grape-glow: rgba(167, 139, 250, .4);
+    --track: rgba(255, 255, 255, .12);
+    --good: #7CFFB2;
+    --warn: #FFCE7A;
+    --bad: #FF8A9B;
+  }
+  html.light {
+    --ink: #F4F4F1;
+    --panel: #FFFFFF;
+    --surface: rgba(10, 10, 11, .035);
+    --surface-strong: rgba(255, 255, 255, .82);
+    --line: rgba(10, 10, 11, .10);
+    --line-strong: rgba(10, 10, 11, .18);
+    --fg: #0A0A0B;
+    --muted: rgba(10, 10, 11, .62);
+    --faint: rgba(10, 10, 11, .40);
+    --accent-glow: rgba(124, 255, 178, .55);
+    --track: rgba(10, 10, 11, .12);
+  }
+
+  * { -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+  body {
+    background: var(--ink);
+    color: var(--fg);
+    font-family: 'Manrope', system-ui, sans-serif;
+    overflow-x: hidden;
+    transition: background .5s ease, color .5s ease;
+  }
+  ::selection { background: var(--accent-glow); color: var(--fg); }
+
+  .font-display { font-family: 'Sora', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+  .grad-text {
+    background: linear-gradient(120deg, var(--accent) 0%, var(--grape) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .glass {
+    background: var(--surface);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid var(--line);
+  }
+  .glass-strong {
+    background: var(--surface-strong);
+    backdrop-filter: blur(30px) saturate(170%);
+    -webkit-backdrop-filter: blur(30px) saturate(170%);
+    border: 1px solid var(--line);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+    padding: .72rem 1.15rem; border-radius: 13px;
+    font-weight: 600; font-size: .875rem; letter-spacing: .01em;
+    border: 1px solid transparent; cursor: pointer; user-select: none;
+    transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease, background .28s ease, color .28s ease, border-color .28s ease;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--accent); color: #06140c; box-shadow: 0 10px 30px -10px var(--accent-glow); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 40px -12px var(--accent-glow); }
+  .btn-ghost { background: var(--surface); border-color: var(--line); color: var(--fg); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .btn-soft { background: rgba(124,255,178,.10); border-color: rgba(124,255,178,.25); color: var(--accent); }
+  .btn-soft:hover { background: rgba(124,255,178,.16); }
+  .btn-icon { padding: .55rem; border-radius: 11px; }
+  .btn:disabled { opacity: .4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .5rem .9rem; border-radius: 999px;
+    font-size: .82rem; font-weight: 600;
+    border: 1px solid var(--line); background: var(--surface);
+    color: var(--muted); cursor: pointer;
+    transition: all .25s cubic-bezier(.22,1,.36,1);
+  }
+  .chip:hover { color: var(--fg); border-color: var(--line-strong); }
+  .chip.active {
+    background: rgba(124,255,178,.12);
+    border-color: rgba(124,255,178,.45);
+    color: var(--accent);
+    box-shadow: 0 6px 20px -8px var(--accent-glow);
+  }
+
+  .range {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 6px; border-radius: 999px; outline: none; cursor: pointer;
+    background: linear-gradient(to right,
+      var(--accent) 0%, var(--accent) var(--pct, 80%),
+      var(--track) var(--pct, 80%), var(--track) 100%);
+  }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 0 0 5px rgba(124,255,178,.18), 0 6px 16px rgba(0,0,0,.45);
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+  .range::-webkit-slider-thumb:hover { transform: scale(1.15); box-shadow: 0 0 0 7px rgba(124,255,178,.22), 0 8px 20px rgba(0,0,0,.5); }
+  .range::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+    box-shadow: 0 0 0 5px rgba(124,255,178,.18), 0 6px 16px rgba(0,0,0,.45);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(.22,1,.36,1), border-color .35s ease, box-shadow .35s ease;
+  }
+  .card:hover { transform: translateY(-4px); border-color: var(--line-strong); box-shadow: 0 24px 50px -24px rgba(0,0,0,.6); }
+  .card .thumb-wrap {
+    position: relative; aspect-ratio: 16/10; overflow: hidden;
+    background-image:
+      linear-gradient(45deg, var(--line) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--line) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--line) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--line) 75%);
+    background-size: 18px 18px; background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+    background-color: var(--panel);
+  }
+  .card .thumb-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .card.processing .thumb-wrap::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(124,255,178,.18) 50%, transparent 70%);
+    background-size: 200% 100%; animation: shimmer 1.6s linear infinite;
+  }
+
+  .r-badge { font-family: 'JetBrains Mono', monospace; font-size: .72rem; font-weight: 600; padding: .18rem .5rem; border-radius: 6px; }
+  .r-down { color: var(--good); background: rgba(124,255,178,.12); }
+  .r-up { color: var(--warn); background: rgba(255,206,122,.12); }
+  .r-same { color: var(--faint); background: var(--surface); }
+
+  .blob { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .5; pointer-events: none; z-index: 0; }
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .35;
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  .dropzone { transition: all .3s cubic-bezier(.22,1,.36,1); border: 1.5px dashed var(--line-strong); }
+  .dropzone:hover { border-color: var(--accent); background: rgba(124,255,178,.04); }
+
+  .toggle { position: relative; width: 42px; height: 24px; border-radius: 999px; background: var(--track); transition: background .25s ease; cursor: pointer; }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .28s cubic-bezier(.22,1,.36,1); }
+  .toggle.on { background: var(--accent); }
+  .toggle.on::after { transform: translateX(18px); }
+
+  .reveal { opacity: 0; }
+  .reveal.in { animation: fadeUp .7s cubic-bezier(.22,1,.36,1) both; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); background-clip: padding-box; }
+
+  .ad-slot {
+    position: relative; border: 1.5px dashed var(--line-strong); border-radius: 18px;
+    background: repeating-linear-gradient(135deg, transparent, transparent 14px, rgba(255,255,255,.02) 14px, rgba(255,255,255,.02) 28px);
+    overflow: hidden;
+  }
+  html.light .ad-slot { background: repeating-linear-gradient(135deg, transparent, transparent 14px, rgba(10,10,11,.025) 14px, rgba(10,10,11,.025) 28px); }
+  .ad-slot::before {
+    content: 'AD · 广告位'; position: absolute; top: 12px; right: 14px;
+    font-family: 'JetBrains Mono', monospace; font-size: .65rem; letter-spacing: .12em;
+    color: var(--faint); text-transform: uppercase;
+  }
+
+  .qr-box {
+    aspect-ratio: 1; border-radius: 16px; border: 1px solid var(--line);
+    background: var(--panel); display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .qr-box::after {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 12px 12px; opacity: .5;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .card.processing .thumb-wrap::after { animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+
+<body class="min-h-screen antialiased">
+
+  <div class="blob animate-blob" style="width:520px;height:520px;background:var(--accent);top:-160px;left:-120px;"></div>
+  <div class="blob animate-blob" style="width:480px;height:480px;background:var(--grape);top:340px;right:-160px;animation-delay:-8s;"></div>
+  <div class="blob animate-blob" style="width:420px;height:420px;background:var(--accent);top:1200px;left:30%;animation-delay:-14s;opacity:.32;"></div>
+  <div class="grid-bg"></div>
+
+  <div id="dropOverlay" class="hidden fixed inset-0 z-[80] glass-strong items-center justify-center">
+    <div class="text-center px-8">
+      <div class="mx-auto mb-6 w-20 h-20 rounded-2xl glass flex items-center justify-center">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
+      </div>
+      <p class="font-display text-2xl font-semibold">松开即可上传</p>
+      <p class="text-muted mt-2 text-sm">支持 JPG · PNG · WebP · BMP，可多张同传</p>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-50 glass-strong border-b" style="border-color:var(--line)">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <span class="relative w-9 h-9 rounded-xl flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h7v7h-7z"/></svg>
+        </span>
+        <div class="leading-none">
+          <p class="font-display font-bold text-[15px] tracking-tight">PixelCraft</p>
+          <p class="text-[10px] text-faint font-mono mt-0.5">local · private · free</p>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center gap-1">
+        <a href="#workspace" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">工具</a>
+        <a href="#features" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">特性</a>
+        <a href="#support" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">赞赏</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button id="themeToggle" class="btn-icon btn btn-ghost" aria-label="切换主题">
+          <svg id="iconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg id="iconSun" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+        </button>
+        <a href="#workspace" class="btn btn-primary hidden sm:inline-flex">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+          立即使用
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="relative z-10">
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-10">
+      <div class="reveal in text-center max-w-3xl mx-auto">
+        <span class="chip mb-6"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
+        <h1 class="font-display font-extrabold tracking-tight text-[clamp(2.2rem,6vw,4.4rem)] leading-[1.04]">
+          在浏览器里，优雅地<br class="hidden sm:block" /><span class="grad-text">重塑</span>每一张图片
+        </h1>
+        <p class="mt-6 text-muted text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+          压缩、格式转换、批量打包 —— 全部在你的浏览器本地完成，图片不离开设备，隐私由你掌控。
+        </p>
+        <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <a href="#workspace" class="btn btn-primary px-6 py-3.5 text-base">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
+            开始处理图片
+          </a>
+          <a href="#features" class="btn btn-ghost px-6 py-3.5 text-base">了解特性</a>
+        </div>
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-faint font-mono">
+          <span>JPG · PNG · WebP · BMP</span><span>·</span>
+          <span>Canvas API 本地编码</span><span>·</span>
+          <span>ZIP 批量下载</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 py-6">
+      <div class="ad-slot h-[100px] sm:h-[120px] flex items-center justify-center">
+        <div class="text-center">
+          <p class="font-display font-semibold text-fg">你的广告位 · 728 × 90</p>
+          <p class="text-xs text-faint mt-1 font-mono">替换此占位为联盟广告代码即可变现</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="workspace" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
+      <div class="flex items-end justify-between mb-6">
+        <div>
+          <h2 class="font-display text-2xl sm:text-3xl font-bold tracking-tight">工作台</h2>
+          <p class="text-muted text-sm mt-1.5">拖入图片，选择格式与质量，一键导出。</p>
+        </div>
+      </div>
+
+      <div id="dropzone" class="dropzone rounded-3xl p-8 sm:p-12 text-center cursor-pointer glass">
+        <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" multiple class="hidden" />
+        <div class="mx-auto mb-5 w-16 h-16 rounded-2xl glass flex items-center justify-center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+        </div>
+        <p class="font-display text-lg font-semibold">点击选择，或拖拽图片到此处</p>
+        <p class="text-muted text-sm mt-2">支持多张同时上传 · JPG / PNG / WebP / BMP</p>
+        <button class="btn btn-soft mt-5 pointer-events-none">选择图片</button>
+      </div>
+
+      <div class="grid lg:grid-cols-[360px_1fr] gap-5 mt-5 items-start">
+        <aside class="glass rounded-3xl p-6 lg:sticky lg:top-24">
+          <h3 class="font-display font-semibold text-lg mb-5 flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.14.34.22.7.22 1.06"/></svg>
+            处理设置
+          </h3>
+
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-3">输出格式</label>
+            <div id="formatGroup" class="grid grid-cols-3 gap-2">
+              <button class="chip justify-center" data-format="image/jpeg">JPG</button>
+              <button class="chip justify-center" data-format="image/png">PNG</button>
+              <button class="chip justify-center active" data-format="image/webp">WebP</button>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-xs font-semibold text-muted uppercase tracking-wider">压缩质量</label>
+              <span id="qualityValue" class="font-mono text-sm text-accent font-semibold">0.80</span>
+            </div>
+            <input id="qualityRange" type="range" min="0.1" max="1" step="0.05" value="0.8" class="range" />
+            <div class="flex justify-between text-[10px] text-faint font-mono mt-2"><span>0.1</span><span>0.5</span><span>1.0</span></div>
+            <div class="grid grid-cols-4 gap-2 mt-3">
+              <button class="chip justify-center text-xs py-1.5" data-q="1">100%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="0.8">80%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="0.6">60%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="0.4">40%</button>
+            </div>
+            <p id="pngNote" class="hidden text-[11px] text-faint mt-3 leading-relaxed">PNG 为无损格式，质量参数不影响输出体积。</p>
+          </div>
+
+          <div class="glass rounded-2xl p-4 mb-5">
+            <p class="text-xs text-muted uppercase tracking-wider font-semibold mb-3">预估体积</p>
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <p id="sumOrig" class="font-mono font-semibold text-sm">—</p>
+                <p class="text-[10px] text-faint mt-1">原始</p>
+              </div>
+              <div>
+                <p id="sumOut" class="font-mono font-semibold text-sm text-accent">—</p>
+                <p class="text-[10px] text-faint mt-1">输出</p>
+              </div>
+              <div>
+                <p id="sumSave" class="font-mono font-semibold text-sm">—</p>
+                <p class="text-[10px] text-faint mt-1">节省</p>
+              </div>
+            </div>
+            <p id="sumHint" class="text-[11px] text-faint mt-3 text-center">上传图片后实时显示预估体积</p>
+          </div>
+
+          <div class="flex items-center justify-between py-2">
+            <div>
+              <p class="text-sm font-medium">保留原文件名</p>
+              <p class="text-[11px] text-faint mt-0.5">关闭则附加质量标记</p>
+            </div>
+            <div id="keepNameToggle" class="toggle on" role="switch" aria-checked="true"></div>
+          </div>
+        </aside>
+
+        <div>
+          <div id="emptyState" class="glass rounded-3xl p-12 text-center">
+            <div class="mx-auto mb-4 w-16 h-16 rounded-2xl glass flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5a2 2 0 0 0-2.8 0L6 21"/></svg>
+            </div>
+            <p class="font-display font-semibold text-lg">还没有图片</p>
+            <p class="text-muted text-sm mt-1.5">把图片拖到上方上传区，或点击选择文件</p>
+          </div>
+
+          <section id="listSection" class="hidden">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-sm text-muted"><span id="itemCount" class="font-mono text-fg font-semibold">0</span> 张图片</p>
+              <button id="clearAll" class="text-xs text-faint hover:text-bad transition-colors">清空全部</button>
+            </div>
+            <div id="grid" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">为什么选择 PixelCraft</h2>
+        <p class="text-muted mt-3">专为隐私与效率而生的极简图片工具。</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <h3 class="font-display font-semibold mb-1.5">隐私优先</h3>
+          <p class="text-sm text-muted leading-relaxed">图片全程在本地处理，永不上传服务器，从根上杜绝泄露。</p>
+        </div>
+        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <h3 class="font-display font-semibold mb-1.5">极速响应</h3>
+          <p class="text-sm text-muted leading-relaxed">Canvas API 本地编码，滑动质量即刻预览体积，无需等待网络。</p>
+        </div>
+        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5z"/><path d="M9 12h6M9 8h6"/></svg></div>
+          <h3 class="font-display font-semibold mb-1.5">批量打包</h3>
+          <p class="text-sm text-muted leading-relaxed">多图同传，一键 ZIP 打包或逐张下载，工作流丝滑顺畅。</p>
+        </div>
+        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>
+          <h3 class="font-display font-semibold mb-1.5">格式自由</h3>
+          <p class="text-sm text-muted leading-relaxed">JPG / PNG / WebP 互转，质量从 0.1 到 1.0 精细可控。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
+      <div class="grid lg:grid-cols-[1.4fr_1fr] gap-5">
+        <div class="ad-slot h-[260px] flex items-center justify-center p-8">
+          <div class="text-center">
+            <p class="font-display font-semibold text-lg text-fg">侧栏广告位 · 300 × 250</p>
+            <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
+          </div>
+        </div>
+        <div class="glass rounded-3xl p-7 text-center flex flex-col items-center">
+          <div class="qr-box w-44 mb-5">
+            <div class="relative z-10 text-center">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>
+              <p class="text-[10px] text-faint font-mono">QR 占位</p>
+            </div>
+          </div>
+          <h3 class="font-display font-semibold text-lg">请作者喝杯咖啡</h3>
+          <p class="text-muted text-sm mt-1.5">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
+          <div class="flex gap-2 mt-4">
+            <span class="chip text-xs">微信</span>
+            <span class="chip text-xs">支付宝</span>
+          </div>
+          <p class="text-[10px] text-faint mt-4 font-mono">替换上方占位为你的赞赏码图片</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="border-t mt-10" style="border-color:var(--line)">
+      <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-2">
+          <div class="flex items-center gap-2.5 mb-3">
+            <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h7v7h-7z"/></svg>
+            </span>
+            <span class="font-display font-bold">PixelCraft</span>
+          </div>
+          <p class="text-sm text-muted leading-relaxed max-w-md">纯前端图片处理工具。所有处理在浏览器本地完成，图片不上传任何服务器，隐私由你掌控。</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-fg uppercase tracking-wider mb-3">技术声明</p>
+          <ul class="space-y-2 text-sm text-muted">
+            <li>Canvas API 本地编码</li>
+            <li>JSZip 批量打包</li>
+            <li>Tailwind CSS 样式</li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-fg uppercase tracking-wider mb-3">隐私承诺</p>
+          <ul class="space-y-2 text-sm text-muted">
+            <li>无后端服务器</li>
+            <li>无网络请求</li>
+            <li>无数据采集</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t" style="border-color:var(--line)">
+        <div class="max-w-7xl mx-auto px-5 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p class="text-xs text-faint font-mono">© <span id="year"></span> PixelCraft · Crafted with care</p>
+          <p class="text-xs text-faint font-mono">Made for creators who value privacy</p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <div id="bulkBar" class="fixed bottom-0 inset-x-0 z-50 translate-y-full transition-transform duration-400 ease-out">
+    <div class="max-w-7xl mx-auto px-5 sm:px-8 pb-4">
+      <div class="glass-strong rounded-2xl px-4 sm:px-5 py-3 flex items-center justify-between gap-3 shadow-2xl">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          </span>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold leading-none"><span id="bulkCount" class="font-mono">0</span> 张待导出</p>
+            <p id="bulkSize" class="text-[11px] text-faint font-mono mt-1 truncate">—</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="downloadAll" class="btn btn-ghost text-xs sm:text-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            <span class="hidden sm:inline">逐张下载</span>
+          </button>
+          <button id="downloadZip" class="btn btn-primary text-xs sm:text-sm">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+            打包 ZIP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[90] opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-strong rounded-xl px-4 py-2.5 text-sm font-medium shadow-xl flex items-center gap-2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span id="toastMsg">已完成</span>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/bmp'];
+  const FORMAT_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+  const FORMAT_LABEL = { 'image/jpeg': 'JPG', 'image/png': 'PNG', 'image/webp': 'WebP', 'image/bmp': 'BMP' };
+
+  const state = {
+    items: [],
+    format: 'image/webp',
+    quality: 0.8,
+    keepName: true,
+    reprocessTimer: null,
+    processing: false,
+  };
+
+  const els = {
+    dropzone: $('#dropzone'),
+    fileInput: $('#fileInput'),
+    grid: $('#grid'),
+    emptyState: $('#emptyState'),
+    listSection: $('#listSection'),
+    itemCount: $('#itemCount'),
+    clearAll: $('#clearAll'),
+    formatGroup: $('#formatGroup'),
+    qualityRange: $('#qualityRange'),
+    qualityValue: $('#qualityValue'),
+    pngNote: $('#pngNote'),
+    qualityPresets: $$('[data-q]'),
+    keepNameToggle: $('#keepNameToggle'),
+    sumOrig: $('#sumOrig'),
+    sumOut: $('#sumOut'),
+    sumSave: $('#sumSave'),
+    sumHint: $('#sumHint'),
+    bulkBar: $('#bulkBar'),
+    bulkCount: $('#bulkCount'),
+    bulkSize: $('#bulkSize'),
+    downloadZip: $('#downloadZip'),
+    downloadAll: $('#downloadAll'),
+    dropOverlay: $('#dropOverlay'),
+    themeToggle: $('#themeToggle'),
+    iconMoon: $('#iconMoon'),
+    iconSun: $('#iconSun'),
+    toast: $('#toast'),
+    toastMsg: $('#toastMsg'),
+    year: $('#year'),
+  };
+
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function fmtBytes(b) {
+    if (b == null) return '—';
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1048576).toFixed(2) + ' MB';
+  }
+  function baseName(name) {
+    const i = name.lastIndexOf('.');
+    return i > 0 ? name.slice(0, i) : name;
+  }
+  function guessType(name) {
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    const map = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', bmp: 'image/bmp' };
+    return map[ext] || 'image/jpeg';
+  }
+  function showToast(msg) {
+    els.toastMsg.textContent = msg;
+    els.toast.style.opacity = '1';
+    els.toast.style.transform = 'translate(-50%, 6px)';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => {
+      els.toast.style.opacity = '0';
+      els.toast.style.transform = 'translate(-50%, 0)';
+    }, 2200);
+  }
+
+  async function getDrawable(file) {
+    if ('createImageBitmap' in window) {
+      try {
+        const bmp = await createImageBitmap(file);
+        return { drawable: bmp, width: bmp.width, height: bmp.height, close: () => { try { bmp.close(); } catch (e) {} } };
+      } catch (e) {}
+    }
+    const data = await new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => resolve({ img, url });
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片解码失败')); };
+      img.src = url;
+    });
+    return { drawable: data.img, width: data.img.naturalWidth, height: data.img.naturalHeight, close: () => URL.revokeObjectURL(data.url) };
+  }
+
+  async function processImage(file, format, quality) {
+    const { drawable, width, height, close } = await getDrawable(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, width);
+    canvas.height = Math.max(1, height);
+    const ctx = canvas.getContext('2d');
+    if (format === 'image/jpeg') {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    ctx.drawImage(drawable, 0, 0, canvas.width, canvas.height);
+    close();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, format, quality));
+    if (!blob) throw new Error('编码失败');
+    return { blob, size: blob.size, width: canvas.width, height: canvas.height, format };
+  }
+
+  function makeName(item) {
+    const ext = FORMAT_EXT[state.format];
+    const base = baseName(item.name);
+    if (state.keepName) return `${base}.${ext}`;
+    const q = String(state.quality).replace('.', '');
+    return `${base}_q${q}.${ext}`;
+  }
+
+  function isAccepted(file) {
+    if (file.type && ACCEPTED_TYPES.includes(file.type)) return true;
+    return /\.(jpe?g|png|webp|bmp)$/i.test(file.name);
+  }
+
+  async function addFiles(fileList) {
+    const files = Array.from(fileList).filter(isAccepted);
+    if (!files.length) return;
+    let added = 0;
+    for (const file of files) {
+      const item = {
+        id: uid(),
+        file,
+        name: file.name,
+        originalSize: file.size,
+        originalType: file.type || guessType(file.name),
+        thumbUrl: URL.createObjectURL(file),
+        result: null,
+        status: 'pending',
+        error: null,
+      };
+      state.items.push(item);
+      added++;
+    }
+    renderList();
+    updateSummary();
+    if (added) showToast(`已添加 ${added} 张图片`);
+    await reprocessAll();
+  }
+
+  function removeItem(item) {
+    try { URL.revokeObjectURL(item.thumbUrl); } catch (e) {}
+    state.items = state.items.filter((i) => i.id !== item.id);
+    renderList();
+    updateSummary();
+  }
+  function clearAll() {
+    state.items.forEach((i) => { try { URL.revokeObjectURL(i.thumbUrl); } catch (e) {} });
+    state.items = [];
+    renderList();
+    updateSummary();
+  }
+
+  function cardHTML(item) {
+    return `
+      <article class="card ${item.status === 'processing' ? 'processing' : ''}" data-id="${item.id}">
+        <div class="thumb-wrap">
+          <img src="${item.thumbUrl}" alt="" loading="lazy" />
+          <span class="absolute top-2 left-2 r-badge" style="background:rgba(10,10,11,.6);color:#fff;backdrop-filter:blur(6px);">${FORMAT_LABEL[item.originalType] || 'IMG'}</span>
+        </div>
+        <div class="p-4">
+          <p class="text-sm font-medium truncate" title="${item.name.replace(/"/g, '&quot;')}">${item.name}</p>
+          <div class="flex items-center gap-2 mt-1 text-[11px] text-faint font-mono">
+            <span data-role="dim">—</span><span>·</span><span data-role="orig">${fmtBytes(item.originalSize)}</span>
+          </div>
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center gap-2">
+              <span data-role="after" class="font-mono text-xs font-semibold text-fg">计算中…</span>
+              <span data-role="ratio" class="r-badge r-same">—</span>
+            </div>
+          </div>
+          <div class="flex gap-2 mt-4">
+            <button class="btn btn-soft flex-1 text-xs py-2" data-act="download" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+              下载
+            </button>
+            <button class="btn btn-ghost btn-icon text-xs py-2" data-act="delete" aria-label="删除">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            </button>
+          </div>
+          <p data-role="error" class="hidden text-[11px] text-bad mt-2"></p>
+        </div>
+      </article>`;
+  }
+
+  function renderList() {
+    if (!state.items.length) {
+      els.grid.innerHTML = '';
+      els.emptyState.classList.remove('hidden');
+      els.listSection.classList.add('hidden');
+      toggleBulkBar(false);
+      return;
+    }
+    els.emptyState.classList.add('hidden');
+    els.listSection.classList.remove('hidden');
+    els.grid.innerHTML = state.items.map(cardHTML).join('');
+    els.itemCount.textContent = state.items.length;
+    state.items.forEach((item) => updateCard(item));
+    toggleBulkBar(true);
+  }
+
+  function getCard(item) {
+    return els.grid.querySelector(`[data-id="${item.id}"]`);
+  }
+
+  function updateCard(item) {
+    const card = getCard(item);
+    if (!card) return;
+    const afterEl = card.querySelector('[data-role="after"]');
+    const ratioEl = card.querySelector('[data-role="ratio"]');
+    const dimEl = card.querySelector('[data-role="dim"]');
+    const dlBtn = card.querySelector('[data-act="download"]');
+    const errEl = card.querySelector('[data-role="error"]');
+
+    card.classList.toggle('processing', item.status === 'processing');
+
+    if (item.status === 'error') {
+      afterEl.textContent = '失败';
+      afterEl.style.color = 'var(--bad)';
+      ratioEl.className = 'r-badge r-same';
+      ratioEl.textContent = '!';
+      errEl.textContent = item.error || '处理失败';
+      errEl.classList.remove('hidden');
+      dlBtn.disabled = true;
+      return;
+    }
+    errEl.classList.add('hidden');
+
+    if (item.result) {
+      dimEl.textContent = `${item.result.width}×${item.result.height}`;
+      afterEl.style.color = 'var(--fg)';
+      afterEl.textContent = fmtBytes(item.result.size);
+      const diff = item.originalSize - item.result.size;
+      let cls, text;
+      if (diff > 0) { cls = 'r-down'; text = `↓ ${Math.round((diff / item.originalSize) * 100)}%`; }
+      else if (diff < 0) { cls = 'r-up'; text = `↑ ${Math.round((-diff / item.originalSize) * 100)}%`; }
+      else { cls = 'r-same'; text = '='; }
+      ratioEl.className = `r-badge ${cls}`;
+      ratioEl.textContent = text;
+      dlBtn.disabled = false;
+    } else if (item.status === 'processing') {
+      afterEl.style.color = 'var(--muted)';
+      afterEl.textContent = '计算中…';
+      ratioEl.className = 'r-badge r-same';
+      ratioEl.textContent = '—';
+      dlBtn.disabled = true;
+    }
+  }
+
+  function updateSummary() {
+    const orig = state.items.reduce((s, i) => s + i.originalSize, 0);
+    const out = state.items.reduce((s, i) => s + (i.result ? i.result.size : 0), 0);
+    if (!state.items.length) {
+      els.sumOrig.textContent = '—';
+      els.sumOut.textContent = '—';
+      els.sumSave.textContent = '—';
+      els.sumHint.textContent = '上传图片后实时显示预估体积';
+      els.bulkSize.textContent = '—';
+      return;
+    }
+    els.sumOrig.textContent = fmtBytes(orig);
+    if (out > 0) {
+      els.sumOut.textContent = fmtBytes(out);
+      const diff = orig - out;
+      const pct = orig > 0 ? Math.round((diff / orig) * 100) : 0;
+      els.sumSave.textContent = (pct >= 0 ? '↓ ' : '↑ ') + Math.abs(pct) + '%';
+      els.sumSave.style.color = pct >= 0 ? 'var(--good)' : 'var(--warn)';
+      els.sumHint.textContent = state.processing ? '正在实时计算…' : '调整质量将自动重算';
+      els.bulkSize.textContent = `原始 ${fmtBytes(orig)} → 输出 ${fmtBytes(out)}`;
+    } else {
+      els.sumOut.textContent = '计算中…';
+      els.sumSave.textContent = '—';
+      els.sumHint.textContent = '正在实时计算…';
+      els.bulkSize.textContent = `原始 ${fmtBytes(orig)}`;
+    }
+    els.bulkCount.textContent = state.items.length;
+  }
+
+  function toggleBulkBar(show) {
+    els.bulkBar.style.transform = show ? 'translateY(0)' : 'translateY(100%)';
+  }
+
+  function scheduleReprocess() {
+    clearTimeout(state.reprocessTimer);
+    state.reprocessTimer = setTimeout(reprocessAll, 260);
+  }
+
+  async function reprocessAll() {
+    if (!state.items.length) { updateSummary(); return; }
+    state.processing = true;
+    for (const item of state.items) {
+      item.status = 'processing';
+      updateCard(item);
+      updateSummary();
+      try {
+        item.result = await processImage(item.file, state.format, state.quality);
+        item.status = 'done';
+        item.error = null;
+      } catch (e) {
+        item.status = 'error';
+        item.error = e.message || '处理失败';
+      }
+      updateCard(item);
+      updateSummary();
+    }
+    state.processing = false;
+    updateSummary();
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  async function downloadZip() {
+    const ready = state.items.filter((i) => i.result);
+    if (!ready.length) { showToast('没有可导出的图片'); return; }
+    els.downloadZip.disabled = true;
+    const original = els.downloadZip.innerHTML;
+    els.downloadZip.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>打包中…';
+    try {
+      const zip = new JSZip();
+      const used = new Set();
+      ready.forEach((item) => {
+        let name = makeName(item);
+        let n = 1;
+        while (used.has(name)) { name = `${baseName(item.name)}-${n}.${FORMAT_EXT[state.format]}`; n++; }
+        used.add(name);
+        zip.file(name, item.result.blob);
+      });
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      downloadBlob(blob, `pixelcraft-${Date.now()}.zip`);
+      showToast(`已打包 ${ready.length} 张图片`);
+    } catch (e) {
+      showToast('打包失败：' + (e.message || e));
+    } finally {
+      els.downloadZip.disabled = false;
+      els.downloadZip.innerHTML = original;
+    }
+  }
+
+  async function downloadAll() {
+    const ready = state.items.filter((i) => i.result);
+    if (!ready.length) { showToast('没有可导出的图片'); return; }
+    els.downloadAll.disabled = true;
+    const used = new Set();
+    for (const item of ready) {
+      let name = makeName(item);
+      let n = 1;
+      while (used.has(name)) { name = `${baseName(item.name)}-${n}.${FORMAT_EXT[state.format]}`; n++; }
+      used.add(name);
+      downloadBlob(item.result.blob, name);
+      await sleep(400);
+    }
+    els.downloadAll.disabled = false;
+    showToast(`已开始下载 ${ready.length} 张图片`);
+  }
+
+  function setSliderFill() {
+    const min = parseFloat(els.qualityRange.min);
+    const max = parseFloat(els.qualityRange.max);
+    const v = parseFloat(els.qualityRange.value);
+    const pct = ((v - min) / (max - min)) * 100;
+    els.qualityRange.style.setProperty('--pct', pct + '%');
+  }
+
+  function setFormat(format) {
+    state.format = format;
+    $$('#formatGroup .chip').forEach((b) => b.classList.toggle('active', b.dataset.format === format));
+    els.pngNote.classList.toggle('hidden', format !== 'image/png');
+    scheduleReprocess();
+  }
+
+  function setQuality(q) {
+    state.quality = q;
+    els.qualityRange.value = q;
+    els.qualityValue.textContent = q.toFixed(2);
+    els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === q));
+    setSliderFill();
+    scheduleReprocess();
+  }
+
+  function bindEvents() {
+    els.dropzone.addEventListener('click', () => els.fileInput.click());
+    els.fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) addFiles(e.target.files);
+      e.target.value = '';
+    });
+
+    els.formatGroup.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-format]');
+      if (btn) setFormat(btn.dataset.format);
+    });
+
+    els.qualityRange.addEventListener('input', (e) => {
+      const q = parseFloat(e.target.value);
+      state.quality = q;
+      els.qualityValue.textContent = q.toFixed(2);
+      els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === q));
+      setSliderFill();
+      scheduleReprocess();
+    });
+    els.qualityPresets.forEach((b) => b.addEventListener('click', () => setQuality(parseFloat(b.dataset.q))));
+
+    els.keepNameToggle.addEventListener('click', () => {
+      state.keepName = !state.keepName;
+      els.keepNameToggle.classList.toggle('on', state.keepName);
+      els.keepNameToggle.setAttribute('aria-checked', state.keepName);
+    });
+
+    els.grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const card = btn.closest('[data-id]');
+      const id = card && card.dataset.id;
+      const item = state.items.find((i) => i.id === id);
+      if (!item) return;
+      if (btn.dataset.act === 'delete') removeItem(item);
+      else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+    });
+
+    els.clearAll.addEventListener('click', clearAll);
+    els.downloadZip.addEventListener('click', downloadZip);
+    els.downloadAll.addEventListener('click', downloadAll);
+
+    let dragDepth = 0;
+    const hasFiles = (e) => e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+    window.addEventListener('dragenter', (e) => {
+      if (!hasFiles(e)) return;
+      dragDepth++;
+      els.dropOverlay.classList.remove('hidden');
+      els.dropOverlay.classList.add('flex');
+    });
+    window.addEventListener('dragover', (e) => { if (hasFiles(e)) e.preventDefault(); });
+    window.addEventListener('dragleave', () => {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) { els.dropOverlay.classList.add('hidden'); els.dropOverlay.classList.remove('flex'); }
+    });
+    window.addEventListener('drop', (e) => {
+      if (!hasFiles(e)) return;
+      e.preventDefault();
+      dragDepth = 0;
+      els.dropOverlay.classList.add('hidden');
+      els.dropOverlay.classList.remove('flex');
+      if (e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+    });
+
+    els.themeToggle.addEventListener('click', () => {
+      const isLight = document.documentElement.classList.toggle('light');
+      document.documentElement.classList.toggle('dark', !isLight);
+      els.iconMoon.classList.toggle('hidden', isLight);
+      els.iconSun.classList.toggle('hidden', !isLight);
+      try { localStorage.setItem('pc-theme', isLight ? 'light' : 'dark'); } catch (e) {}
+    });
+
+    $$('a[href^="#"]').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        const id = a.getAttribute('href');
+        if (id.length > 1) {
+          const t = $(id);
+          if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        }
+      });
+    });
+  }
+
+  function initTheme() {
+    let saved = 'dark';
+    try { saved = localStorage.getItem('pc-theme') || 'dark'; } catch (e) {}
+    if (saved === 'light') {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      els.iconMoon.classList.add('hidden');
+      els.iconSun.classList.remove('hidden');
+    }
+  }
+
+  function init() {
+    els.year.textContent = new Date().getFullYear();
+    initTheme();
+    setFormat(state.format);
+    setQuality(state.quality);
+    bindEvents();
+    renderList();
+    updateSummary();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
