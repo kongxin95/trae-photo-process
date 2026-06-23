@@ -375,8 +375,8 @@
             <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-3">输出格式</label>
             <div id="formatGroup" class="grid grid-cols-3 gap-2">
               <button class="chip justify-center" data-format="image/jpeg">JPG</button>
-              <button class="chip justify-center" data-format="image/png">PNG</button>
-              <button class="chip justify-center active" data-format="image/webp">WebP</button>
+              <button class="chip justify-center active" data-format="image/png">PNG</button>
+              <button class="chip justify-center" data-format="image/webp">WebP</button>
             </div>
           </div>
 
@@ -481,20 +481,17 @@
             <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
           </div>
         </div>
-        <div class="glass rounded-3xl p-7 text-center flex flex-col items-center">
-          <div class="qr-box w-44 mb-5">
-            <div class="relative z-10 text-center">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>
-              <p class="text-[10px] text-faint font-mono">QR 占位</p>
-            </div>
+        <div class="glass rounded-3xl p-6 sm:p-8 text-center flex flex-col items-center">
+          <div class="qr-box w-64 sm:w-72 lg:w-80 mb-6 overflow-hidden">
+            <img src="donate.png" alt="赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
           </div>
-          <h3 class="font-display font-semibold text-lg">请作者喝杯咖啡</h3>
-          <p class="text-muted text-sm mt-1.5">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
-          <div class="flex gap-2 mt-4">
+          <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡</h3>
+          <p class="text-muted text-sm mt-2">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
+          <div class="flex gap-2 mt-5">
             <span class="chip text-xs">微信</span>
             <span class="chip text-xs">支付宝</span>
           </div>
-          <p class="text-[10px] text-faint mt-4 font-mono">替换上方占位为你的赞赏码图片</p>
+          <p class="text-[10px] text-faint mt-5 font-mono">替换上方占位为你的赞赏码图片</p>
         </div>
       </div>
     </section>
@@ -580,7 +577,7 @@
 
   const state = {
     items: [],
-    format: 'image/webp',
+    format: 'image/png',
     quality: 0.8,
     keepName: true,
     reprocessTimer: null,
