@@ -199,6 +199,20 @@
     background-color: var(--panel);
   }
   .card .thumb-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .card .compare-wrap { cursor: zoom-in; }
+  .card .compare-img { position: absolute; inset: 0; transition: transform .4s ease; }
+  .card .compare-after { opacity: 1; }
+  .card .compare-wrap:hover .compare-after { transform: scale(1.04); }
+  .card .compare-label {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
+    background: rgba(10,10,11,.65); color: #fff; backdrop-filter: blur(6px);
+    pointer-events: none; opacity: 0; transition: opacity .25s ease, transform .25s ease;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .card .compare-wrap:hover .compare-label { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+  .card.processing .compare-after { opacity: .5; }
   .card.processing .thumb-wrap::after {
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(110deg, transparent 30%, rgba(124,255,178,.18) 50%, transparent 70%);
@@ -283,6 +297,33 @@
     </div>
   </div>
 
+  <div id="lightbox" class="hidden fixed inset-0 z-[90] flex flex-col" style="background:rgba(0,0,0,.92);backdrop-filter:blur(12px);">
+    <div class="flex items-center justify-between px-5 sm:px-8 py-4 border-b" style="border-color:rgba(255,255,255,.1)">
+      <div>
+        <p id="lbName" class="text-white text-sm font-medium truncate max-w-[60vw]">—</p>
+        <p id="lbInfo" class="text-white/50 text-xs font-mono mt-0.5">—</p>
+      </div>
+      <button id="lbClose" class="w-10 h-10 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors" aria-label="关闭">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div id="lbCompare" class="flex-1 relative overflow-hidden cursor-col-resize select-none">
+      <div class="absolute inset-0 flex items-center justify-center p-8">
+        <img id="lbOrig" src="" alt="原图" class="max-w-full max-h-full object-contain" draggable="false" />
+      </div>
+      <div id="lbAfterWrap" class="absolute inset-0 flex items-center justify-center p-8" style="clip-path: inset(0 50% 0 0);">
+        <img id="lbAfter" src="" alt="处理后" class="max-w-full max-h-full object-contain" draggable="false" />
+      </div>
+      <div id="lbDivider" class="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-lg" style="left:50%;">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-xl flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/><path d="m15 18-6-6 6-6"/></svg>
+        </div>
+      </div>
+      <span class="absolute bottom-6 left-6 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono text-white" style="background:rgba(0,0,0,.6);backdrop-filter:blur(6px);">原图</span>
+      <span class="absolute bottom-6 right-6 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono text-white" style="background:rgba(0,0,0,.6);backdrop-filter:blur(6px);">处理后</span>
+    </div>
+  </div>
+
   <header class="sticky top-0 z-50 glass-strong border-b" style="border-color:var(--line)">
     <div class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
       <a href="#top" class="flex items-center gap-2.5 group">
@@ -313,23 +354,23 @@
   </header>
 
   <main id="top" class="relative z-10">
-    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-16 sm:pt-24 pb-10">
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-8 sm:pt-10 pb-0">
       <div class="reveal in text-center max-w-3xl mx-auto">
-        <span class="chip mb-6"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
-        <h1 class="font-display font-extrabold tracking-tight text-[clamp(2.2rem,6vw,4.4rem)] leading-[1.04]">
-          在浏览器里，优雅地<br class="hidden sm:block" /><span class="grad-text">重塑</span>每一张图片
+        <span class="chip mb-4 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
+        <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.6rem,4.5vw,3rem)] leading-[1.05]">
+          在浏览器里，优雅地<span class="grad-text">重塑</span>每一张图片
         </h1>
-        <p class="mt-6 text-muted text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
-          压缩、格式转换、批量打包 —— 全部在你的浏览器本地完成，图片不离开设备，隐私由你掌控。
+        <p class="mt-3 text-muted text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
+          压缩、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
         </p>
-        <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <a href="#workspace" class="btn btn-primary px-6 py-3.5 text-base">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+          <a href="#workspace" class="btn btn-primary px-5 py-2.5 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
             开始处理图片
           </a>
-          <a href="#features" class="btn btn-ghost px-6 py-3.5 text-base">了解特性</a>
+          <a href="#features" class="btn btn-ghost px-5 py-2.5 text-sm">了解特性</a>
         </div>
-        <div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-faint font-mono">
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-faint font-mono">
           <span>JPG · PNG · WebP · BMP</span><span>·</span>
           <span>Canvas API 本地编码</span><span>·</span>
           <span>ZIP 批量下载</span>
@@ -337,16 +378,16 @@
       </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-5 sm:px-8 py-6">
-      <div class="ad-slot h-[100px] sm:h-[120px] flex items-center justify-center">
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-1 pb-0">
+      <div class="ad-slot h-[90px] flex items-center justify-center">
         <div class="text-center">
-          <p class="font-display font-semibold text-fg">你的广告位 · 728 × 90</p>
-          <p class="text-xs text-faint mt-1 font-mono">替换此占位为联盟广告代码即可变现</p>
+          <p class="font-display font-semibold text-sm text-fg">你的广告位 · 728 × 90</p>
+          <p class="text-[11px] text-faint mt-0.5 font-mono">替换此占位为联盟广告代码即可变现</p>
         </div>
       </div>
     </section>
 
-    <section id="workspace" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
+    <section id="workspace" class="max-w-7xl mx-auto px-5 sm:px-8 pt-6 pb-10">
       <div class="flex items-end justify-between mb-6">
         <div>
           <h2 class="font-display text-2xl sm:text-3xl font-bold tracking-tight">工作台</h2>
@@ -375,25 +416,31 @@
             <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-3">输出格式</label>
             <div id="formatGroup" class="grid grid-cols-3 gap-2">
               <button class="chip justify-center" data-format="image/jpeg">JPG</button>
-              <button class="chip justify-center" data-format="image/png">PNG</button>
-              <button class="chip justify-center active" data-format="image/webp">WebP</button>
+              <button class="chip justify-center active" data-format="image/png">PNG</button>
+              <button class="chip justify-center" data-format="image/webp">WebP</button>
             </div>
           </div>
 
           <div class="mb-6">
             <div class="flex items-center justify-between mb-3">
-              <label class="text-xs font-semibold text-muted uppercase tracking-wider">压缩质量</label>
+              <label id="qualityLabel" class="text-xs font-semibold text-muted uppercase tracking-wider">压缩质量</label>
               <span id="qualityValue" class="font-mono text-sm text-accent font-semibold">0.80</span>
             </div>
             <input id="qualityRange" type="range" min="0.1" max="1" step="0.05" value="0.8" class="range" />
-            <div class="flex justify-between text-[10px] text-faint font-mono mt-2"><span>0.1</span><span>0.5</span><span>1.0</span></div>
-            <div class="grid grid-cols-4 gap-2 mt-3">
+            <div id="qualityTicks" class="flex justify-between text-[10px] text-faint font-mono mt-2"><span>0.1</span><span>0.5</span><span>1.0</span></div>
+            <div id="qualityPresets" class="grid grid-cols-4 gap-2 mt-3">
               <button class="chip justify-center text-xs py-1.5" data-q="1">100%</button>
               <button class="chip justify-center text-xs py-1.5" data-q="0.8">80%</button>
               <button class="chip justify-center text-xs py-1.5" data-q="0.6">60%</button>
               <button class="chip justify-center text-xs py-1.5" data-q="0.4">40%</button>
             </div>
-            <p id="pngNote" class="hidden text-[11px] text-faint mt-3 leading-relaxed">PNG 为无损格式，质量参数不影响输出体积。</p>
+            <div id="pngPresets" class="hidden grid grid-cols-4 gap-2 mt-3">
+              <button class="chip justify-center text-xs py-1.5" data-colors="256">256</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="128">128</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="64">64</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="32">32</button>
+            </div>
+            <p id="pngNote" class="hidden text-[11px] text-faint mt-3 leading-relaxed">PNG 通过减少颜色数压缩体积，适合截图、图标、文字类图片。</p>
           </div>
 
           <div class="glass rounded-2xl p-4 mb-5">
@@ -481,20 +528,17 @@
             <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
           </div>
         </div>
-        <div class="glass rounded-3xl p-7 text-center flex flex-col items-center">
-          <div class="qr-box w-44 mb-5">
-            <div class="relative z-10 text-center">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 1v3M10 1v3M14 1v3"/></svg>
-              <p class="text-[10px] text-faint font-mono">QR 占位</p>
-            </div>
+        <div class="glass rounded-3xl p-6 sm:p-8 text-center flex flex-col items-center">
+          <div class="qr-box w-64 sm:w-72 lg:w-80 mb-6 overflow-hidden">
+            <img src="donate.png" alt="赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
           </div>
-          <h3 class="font-display font-semibold text-lg">请作者喝杯咖啡</h3>
-          <p class="text-muted text-sm mt-1.5">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
-          <div class="flex gap-2 mt-4">
+          <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡</h3>
+          <p class="text-muted text-sm mt-2">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
+          <div class="flex gap-2 mt-5">
             <span class="chip text-xs">微信</span>
             <span class="chip text-xs">支付宝</span>
           </div>
-          <p class="text-[10px] text-faint mt-4 font-mono">替换上方占位为你的赞赏码图片</p>
+          <p class="text-[10px] text-faint mt-5 font-mono">替换上方占位为你的赞赏码图片</p>
         </div>
       </div>
     </section>
@@ -580,8 +624,9 @@
 
   const state = {
     items: [],
-    format: 'image/webp',
+    format: 'image/png',
     quality: 0.8,
+    pngColors: 256,
     keepName: true,
     reprocessTimer: null,
     processing: false,
@@ -598,8 +643,11 @@
     formatGroup: $('#formatGroup'),
     qualityRange: $('#qualityRange'),
     qualityValue: $('#qualityValue'),
+    qualityLabel: $('#qualityLabel'),
+    qualityTicks: $('#qualityTicks'),
     pngNote: $('#pngNote'),
-    qualityPresets: $$('[data-q]'),
+    qualityPresets: $$('#qualityPresets [data-q]'),
+    pngPresets: $$('#pngPresets [data-colors]'),
     keepNameToggle: $('#keepNameToggle'),
     sumOrig: $('#sumOrig'),
     sumOut: $('#sumOut'),
@@ -611,6 +659,15 @@
     downloadZip: $('#downloadZip'),
     downloadAll: $('#downloadAll'),
     dropOverlay: $('#dropOverlay'),
+    lightbox: $('#lightbox'),
+    lbName: $('#lbName'),
+    lbInfo: $('#lbInfo'),
+    lbClose: $('#lbClose'),
+    lbCompare: $('#lbCompare'),
+    lbOrig: $('#lbOrig'),
+    lbAfter: $('#lbAfter'),
+    lbAfterWrap: $('#lbAfterWrap'),
+    lbDivider: $('#lbDivider'),
     themeToggle: $('#themeToggle'),
     iconMoon: $('#iconMoon'),
     iconSun: $('#iconSun'),
@@ -665,7 +722,220 @@
     return { drawable: data.img, width: data.img.naturalWidth, height: data.img.naturalHeight, close: () => URL.revokeObjectURL(data.url) };
   }
 
-  async function processImage(file, format, quality) {
+  function medianCut(pixels, colorCount) {
+    const colors = [];
+    const step = Math.max(1, Math.floor(pixels.length / 4 / 20000));
+    for (let i = 0; i < pixels.length; i += 4 * step) {
+      const a = pixels[i + 3];
+      if (a < 8) continue;
+      colors.push([pixels[i], pixels[i + 1], pixels[i + 2], a]);
+    }
+    if (colors.length === 0) {
+      const palette = [];
+      for (let i = 0; i < colorCount; i++) palette.push([255, 255, 255, 0]);
+      return palette;
+    }
+    const buckets = [colors];
+    while (buckets.length < colorCount) {
+      let maxIdx = 0, maxRange = 0, maxChannel = 0;
+      for (let b = 0; b < buckets.length; b++) {
+        const bucket = buckets[b];
+        if (bucket.length <= 1) continue;
+        let rMin = 255, rMax = 0, gMin = 255, gMax = 0, blMin = 255, blMax = 0;
+        for (let i = 0; i < bucket.length; i++) {
+          const c = bucket[i];
+          if (c[0] < rMin) rMin = c[0]; if (c[0] > rMax) rMax = c[0];
+          if (c[1] < gMin) gMin = c[1]; if (c[1] > gMax) gMax = c[1];
+          if (c[2] < blMin) blMin = c[2]; if (c[2] > blMax) blMax = c[2];
+        }
+        const rR = rMax - rMin, gR = gMax - gMin, bR = blMax - blMin;
+        let range, channel;
+        if (rR >= gR && rR >= bR) { range = rR; channel = 0; }
+        else if (gR >= bR) { range = gR; channel = 1; }
+        else { range = bR; channel = 2; }
+        if (range > maxRange) { maxRange = range; maxIdx = b; maxChannel = channel; }
+      }
+      if (maxRange === 0) break;
+      const bucket = buckets[maxIdx];
+      bucket.sort((a, b) => a[maxChannel] - b[maxChannel]);
+      const mid = Math.floor(bucket.length / 2);
+      buckets[maxIdx] = bucket.slice(0, mid);
+      buckets.push(bucket.slice(mid));
+    }
+    const palette = [];
+    for (const bucket of buckets) {
+      let r = 0, g = 0, b = 0, a = 0;
+      for (const c of bucket) { r += c[0]; g += c[1]; b += c[2]; a += c[3]; }
+      const n = bucket.length || 1;
+      palette.push([Math.round(r / n), Math.round(g / n), Math.round(b / n), Math.round(a / n)]);
+    }
+    while (palette.length < colorCount) palette.push(palette[palette.length - 1] || [255,255,255,255]);
+    return palette.slice(0, colorCount);
+  }
+
+  function quantizeImage(pixels, width, height, palette) {
+    const indices = new Uint8Array(width * height);
+    const transparentIdx = palette.findIndex(c => c[3] < 128);
+    const pal = palette.map(c => [c[0], c[1], c[2], c[3]]);
+    for (let i = 0, j = 0; i < pixels.length; i += 4, j++) {
+      const a = pixels[i + 3];
+      if (a < 8) { indices[j] = transparentIdx >= 0 ? transparentIdx : 0; continue; }
+      const r = pixels[i], g = pixels[i + 1], b = pixels[i + 2];
+      let minDist = 1e9, minIdx = 0;
+      for (let k = 0; k < pal.length; k++) {
+        const pc = pal[k];
+        if (pc[3] < 128) continue;
+        const dr = r - pc[0], dg = g - pc[1], db = b - pc[2];
+        const dist = dr * dr + dg * dg + db * db;
+        if (dist < minDist) { minDist = dist; minIdx = k; }
+      }
+      indices[j] = minIdx;
+    }
+    return indices;
+  }
+
+  function crc32(data) {
+    let crc = 0xFFFFFFFF;
+    const table = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) {
+      let c = n;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      table[n] = c;
+    }
+    for (let i = 0; i < data.length; i++) crc = table[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function pngChunk(type, data) {
+    const typeBytes = new TextEncoder().encode(type);
+    const combined = new Uint8Array(typeBytes.length + data.length);
+    combined.set(typeBytes, 0);
+    combined.set(data, typeBytes.length);
+    const crc = crc32(combined);
+    const result = new Uint8Array(4 + combined.length + 4);
+    const view = new DataView(result.buffer);
+    view.setUint32(0, data.length);
+    result.set(combined, 4);
+    view.setUint32(4 + combined.length, crc);
+    return result;
+  }
+
+  async function deflateZlib(data) {
+    if (typeof CompressionStream !== 'undefined') {
+      try {
+        const cs = new CompressionStream('deflate');
+        const writer = cs.writable.getWriter();
+        const reader = cs.readable.getReader();
+        writer.write(data);
+        writer.close();
+        const chunks = [];
+        let total = 0;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          total += value.length;
+        }
+        const result = new Uint8Array(total);
+        let offset = 0;
+        for (const c of chunks) { result.set(c, offset); offset += c.length; }
+        return result;
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  async function encodePNG8(width, height, palette, indices) {
+    const SIGNATURE = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    const ihdr = new Uint8Array(13);
+    const iv = new DataView(ihdr.buffer);
+    iv.setUint32(0, width);
+    iv.setUint32(4, height);
+    ihdr[8] = 8;
+    ihdr[9] = 3;
+    ihdr[10] = 0;
+    ihdr[11] = 0;
+    ihdr[12] = 0;
+    const ihdrChunk = pngChunk('IHDR', ihdr);
+
+    const numColors = palette.length;
+    const plte = new Uint8Array(numColors * 3);
+    let hasTransparent = false;
+    let transIdx = 0;
+    for (let i = 0; i < numColors; i++) {
+      plte[i * 3] = palette[i][0];
+      plte[i * 3 + 1] = palette[i][1];
+      plte[i * 3 + 2] = palette[i][2];
+      if (palette[i][3] < 128 && !hasTransparent) { hasTransparent = true; transIdx = i; }
+    }
+    const plteChunk = pngChunk('PLTE', plte);
+
+    const trnsChunk = hasTransparent ? pngChunk('tRNS', new Uint8Array([transIdx])) : null;
+
+    const rawData = new Uint8Array((width + 1) * height);
+    for (let y = 0; y < height; y++) {
+      rawData[y * (width + 1)] = 0;
+      for (let x = 0; x < width; x++) {
+        rawData[y * (width + 1) + 1 + x] = indices[y * width + x];
+      }
+    }
+
+    let compressed = await deflateZlib(rawData);
+    let idatChunk;
+
+    if (compressed) {
+      idatChunk = pngChunk('IDAT', compressed);
+    } else {
+      const makeZlibStored = (data) => {
+        const zlib = new Uint8Array(2 + data.length + 4 + Math.ceil(data.length / 65535) * 5);
+        zlib[0] = 0x78; zlib[1] = 0x01;
+        let pos = 2;
+        let remaining = data.length;
+        let srcPos = 0;
+        while (remaining > 0) {
+          const blockSize = Math.min(remaining, 65535);
+          const lastBlock = remaining - blockSize === 0;
+          zlib[pos++] = lastBlock ? 0x01 : 0x00;
+          zlib[pos++] = blockSize & 0xFF;
+          zlib[pos++] = (blockSize >> 8) & 0xFF;
+          zlib[pos++] = (~blockSize) & 0xFF;
+          zlib[pos++] = ((~blockSize) >> 8) & 0xFF;
+          zlib.set(data.subarray(srcPos, srcPos + blockSize), pos);
+          pos += blockSize;
+          srcPos += blockSize;
+          remaining -= blockSize;
+        }
+        let a = 1, b = 0;
+        for (let i = 0; i < data.length; i++) {
+          a = (a + data[i]) % 65521;
+          b = (b + a) % 65521;
+        }
+        const adler = ((b << 16) | a) >>> 0;
+        const dv = new DataView(zlib.buffer);
+        dv.setUint32(pos, adler);
+        return zlib.subarray(0, pos + 4);
+      };
+      const zlibData = makeZlibStored(rawData);
+      idatChunk = pngChunk('IDAT', zlibData);
+    }
+
+    const iendChunk = pngChunk('IEND', new Uint8Array(0));
+
+    let totalLen = SIGNATURE.length + ihdrChunk.length + plteChunk.length;
+    if (trnsChunk) totalLen += trnsChunk.length;
+    totalLen += idatChunk.length + iendChunk.length;
+    const result = new Uint8Array(totalLen);
+    let offset = 0;
+    result.set(SIGNATURE, offset); offset += SIGNATURE.length;
+    result.set(ihdrChunk, offset); offset += ihdrChunk.length;
+    result.set(plteChunk, offset); offset += plteChunk.length;
+    if (trnsChunk) { result.set(trnsChunk, offset); offset += trnsChunk.length; }
+    result.set(idatChunk, offset); offset += idatChunk.length;
+    result.set(iendChunk, offset);
+    return new Blob([result], { type: 'image/png' });
+  }
+
+  async function processImage(file, format, quality, pngColors) {
     const { drawable, width, height, close } = await getDrawable(file);
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, width);
@@ -677,6 +947,15 @@
     }
     ctx.drawImage(drawable, 0, 0, canvas.width, canvas.height);
     close();
+
+    if (format === 'image/png' && pngColors && pngColors <= 256) {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const palette = medianCut(imgData.data, pngColors);
+      const indices = quantizeImage(imgData.data, canvas.width, canvas.height, palette);
+      const blob = await encodePNG8(canvas.width, canvas.height, palette, indices);
+      return { blob, size: blob.size, width: canvas.width, height: canvas.height, format };
+    }
+
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, format, quality));
     if (!blob) throw new Error('编码失败');
     return { blob, size: blob.size, width: canvas.width, height: canvas.height, format };
@@ -686,6 +965,9 @@
     const ext = FORMAT_EXT[state.format];
     const base = baseName(item.name);
     if (state.keepName) return `${base}.${ext}`;
+    if (state.format === 'image/png') {
+      return `${base}_${state.pngColors}c.${ext}`;
+    }
     const q = String(state.quality).replace('.', '');
     return `${base}_q${q}.${ext}`;
   }
@@ -722,12 +1004,16 @@
 
   function removeItem(item) {
     try { URL.revokeObjectURL(item.thumbUrl); } catch (e) {}
+    if (item.resultUrl) { try { URL.revokeObjectURL(item.resultUrl); } catch(e) {} }
     state.items = state.items.filter((i) => i.id !== item.id);
     renderList();
     updateSummary();
   }
   function clearAll() {
-    state.items.forEach((i) => { try { URL.revokeObjectURL(i.thumbUrl); } catch (e) {} });
+    state.items.forEach((i) => {
+      try { URL.revokeObjectURL(i.thumbUrl); } catch (e) {}
+      if (i.resultUrl) { try { URL.revokeObjectURL(i.resultUrl); } catch(e) {} }
+    });
     state.items = [];
     renderList();
     updateSummary();
@@ -736,9 +1022,11 @@
   function cardHTML(item) {
     return `
       <article class="card ${item.status === 'processing' ? 'processing' : ''}" data-id="${item.id}">
-        <div class="thumb-wrap">
-          <img src="${item.thumbUrl}" alt="" loading="lazy" />
+        <div class="thumb-wrap compare-wrap">
+          <img src="${item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-orig" />
+          <img src="${item.resultUrl || item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-after ${item.resultUrl ? '' : 'opacity-0'}" />
           <span class="absolute top-2 left-2 r-badge" style="background:rgba(10,10,11,.6);color:#fff;backdrop-filter:blur(6px);">${FORMAT_LABEL[item.originalType] || 'IMG'}</span>
+          <span class="compare-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>点击放大对比</span>
         </div>
         <div class="p-4">
           <p class="text-sm font-medium truncate" title="${item.name.replace(/"/g, '&quot;')}">${item.name}</p>
@@ -808,6 +1096,14 @@
     }
     errEl.classList.add('hidden');
 
+    const afterImg = card.querySelector('.compare-after');
+    if (item.resultUrl && afterImg) {
+      afterImg.src = item.resultUrl;
+      afterImg.classList.remove('opacity-0');
+    } else if (afterImg) {
+      afterImg.classList.add('opacity-0');
+    }
+
     if (item.result) {
       dimEl.textContent = `${item.result.width}×${item.result.height}`;
       afterEl.style.color = 'var(--fg)';
@@ -872,10 +1168,12 @@
     state.processing = true;
     for (const item of state.items) {
       item.status = 'processing';
+      if (item.resultUrl) { try { URL.revokeObjectURL(item.resultUrl); } catch(e){} item.resultUrl = null; }
       updateCard(item);
       updateSummary();
       try {
-        item.result = await processImage(item.file, state.format, state.quality);
+        item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null);
+        item.resultUrl = URL.createObjectURL(item.result.blob);
         item.status = 'done';
         item.error = null;
       } catch (e) {
@@ -955,17 +1253,116 @@
   function setFormat(format) {
     state.format = format;
     $$('#formatGroup .chip').forEach((b) => b.classList.toggle('active', b.dataset.format === format));
-    els.pngNote.classList.toggle('hidden', format !== 'image/png');
+    const isPng = format === 'image/png';
+    els.pngNote.classList.toggle('hidden', !isPng);
+    if (els.qualityPresets.length) {
+      els.qualityPresets[0].parentElement.classList.toggle('hidden', isPng);
+    }
+    if (els.pngPresets.length) {
+      els.pngPresets[0].parentElement.classList.toggle('hidden', !isPng);
+    }
+    if (isPng) {
+      els.qualityLabel.textContent = '颜色数量';
+      els.qualityTicks.innerHTML = '<span>32</span><span>128</span><span>256</span>';
+      els.qualityRange.min = 32;
+      els.qualityRange.max = 256;
+      els.qualityRange.step = 8;
+      els.qualityRange.value = state.pngColors;
+      els.qualityValue.textContent = state.pngColors;
+      els.pngPresets.forEach((b) => b.classList.toggle('active', parseInt(b.dataset.colors, 10) === state.pngColors));
+    } else {
+      els.qualityLabel.textContent = '压缩质量';
+      els.qualityTicks.innerHTML = '<span>0.1</span><span>0.5</span><span>1.0</span>';
+      els.qualityRange.min = 0.1;
+      els.qualityRange.max = 1;
+      els.qualityRange.step = 0.05;
+      els.qualityRange.value = state.quality;
+      els.qualityValue.textContent = state.quality.toFixed(2);
+      els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === state.quality));
+    }
+    setSliderFill();
     scheduleReprocess();
   }
 
   function setQuality(q) {
     state.quality = q;
+    if (state.format === 'image/png') return;
     els.qualityRange.value = q;
     els.qualityValue.textContent = q.toFixed(2);
     els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === q));
     setSliderFill();
     scheduleReprocess();
+  }
+
+  function setColors(n) {
+    state.pngColors = n;
+    if (state.format !== 'image/png') return;
+    els.qualityRange.value = n;
+    els.qualityValue.textContent = String(n);
+    els.pngPresets.forEach((b) => b.classList.toggle('active', parseInt(b.dataset.colors, 10) === n));
+    setSliderFill();
+    scheduleReprocess();
+  }
+
+  function openLightbox(item) {
+    if (!item || !item.resultUrl) return;
+    els.lbName.textContent = item.name;
+    let info = `${FORMAT_LABEL[item.originalType] || 'IMG'} · ${fmtBytes(item.originalSize)}`;
+    if (item.result) {
+      const diff = item.originalSize - item.result.size;
+      const pct = diff > 0 ? `↓${Math.round((diff / item.originalSize) * 100)}%` : (diff < 0 ? `↑${Math.round((-diff / item.originalSize) * 100)}%` : '=');
+      info += `  →  ${FORMAT_LABEL[item.result.format]} · ${fmtBytes(item.result.size)} (${pct})`;
+    }
+    els.lbInfo.textContent = info;
+    els.lbOrig.src = item.thumbUrl;
+    els.lbAfter.src = item.resultUrl;
+    els.lbAfterWrap.style.clipPath = 'inset(0 50% 0 0)';
+    els.lbDivider.style.left = '50%';
+    els.lightbox.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    els.lightbox.classList.add('hidden');
+    els.lbOrig.src = '';
+    els.lbAfter.src = '';
+    document.body.style.overflow = '';
+  }
+
+  function setComparePos(clientX) {
+    const rect = els.lbCompare.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    els.lbAfterWrap.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    els.lbDivider.style.left = pct + '%';
+  }
+
+  let lbDragging = false;
+  function initLightboxDrag() {
+    const onMove = (e) => {
+      if (!lbDragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setComparePos(x);
+    };
+    const onUp = () => { lbDragging = false; };
+
+    els.lbDivider.addEventListener('mousedown', (e) => { lbDragging = true; e.preventDefault(); });
+    els.lbCompare.addEventListener('mousedown', (e) => {
+      if (e.target === els.lbDivider || els.lbDivider.contains(e.target)) return;
+      lbDragging = true;
+      setComparePos(e.clientX);
+    });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+
+    els.lbDivider.addEventListener('touchstart', (e) => { lbDragging = true; e.preventDefault(); }, { passive: false });
+    els.lbCompare.addEventListener('touchstart', (e) => {
+      if (e.target === els.lbDivider || els.lbDivider.contains(e.target)) return;
+      lbDragging = true;
+      setComparePos(e.touches[0].clientX);
+    }, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onUp);
   }
 
   function bindEvents() {
@@ -981,14 +1378,21 @@
     });
 
     els.qualityRange.addEventListener('input', (e) => {
-      const q = parseFloat(e.target.value);
-      state.quality = q;
-      els.qualityValue.textContent = q.toFixed(2);
-      els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === q));
+      const val = parseFloat(e.target.value);
+      if (state.format === 'image/png') {
+        state.pngColors = Math.round(val);
+        els.qualityValue.textContent = String(state.pngColors);
+        els.pngPresets.forEach((b) => b.classList.toggle('active', parseInt(b.dataset.colors, 10) === state.pngColors));
+      } else {
+        state.quality = val;
+        els.qualityValue.textContent = val.toFixed(2);
+        els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === val));
+      }
       setSliderFill();
       scheduleReprocess();
     });
     els.qualityPresets.forEach((b) => b.addEventListener('click', () => setQuality(parseFloat(b.dataset.q))));
+    els.pngPresets.forEach((b) => b.addEventListener('click', () => setColors(parseInt(b.dataset.colors, 10))));
 
     els.keepNameToggle.addEventListener('click', () => {
       state.keepName = !state.keepName;
@@ -998,13 +1402,28 @@
 
     els.grid.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-act]');
-      if (!btn) return;
-      const card = btn.closest('[data-id]');
-      const id = card && card.dataset.id;
+      if (btn) {
+        const card = btn.closest('[data-id]');
+        const id = card && card.dataset.id;
+        const item = state.items.find((i) => i.id === id);
+        if (!item) return;
+        if (btn.dataset.act === 'delete') removeItem(item);
+        else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+        return;
+      }
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const id = card.dataset.id;
       const item = state.items.find((i) => i.id === id);
-      if (!item) return;
-      if (btn.dataset.act === 'delete') removeItem(item);
-      else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+      if (item && item.resultUrl) openLightbox(item);
+    });
+
+    els.lbClose.addEventListener('click', closeLightbox);
+    els.lightbox.addEventListener('click', (e) => {
+      if (e.target === els.lightbox || e.target === els.lbCompare) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !els.lightbox.classList.contains('hidden')) closeLightbox();
     });
 
     els.clearAll.addEventListener('click', clearAll);
@@ -1069,6 +1488,7 @@
     setFormat(state.format);
     setQuality(state.quality);
     bindEvents();
+    initLightboxDrag();
     renderList();
     updateSummary();
   }
