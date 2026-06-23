@@ -199,6 +199,20 @@
     background-color: var(--panel);
   }
   .card .thumb-wrap img { width: 100%; height: 100%; object-fit: contain; }
+  .card .compare-wrap { cursor: zoom-in; }
+  .card .compare-img { position: absolute; inset: 0; transition: transform .4s ease; }
+  .card .compare-after { opacity: 1; }
+  .card .compare-wrap:hover .compare-after { transform: scale(1.04); }
+  .card .compare-label {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
+    background: rgba(10,10,11,.65); color: #fff; backdrop-filter: blur(6px);
+    pointer-events: none; opacity: 0; transition: opacity .25s ease, transform .25s ease;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .card .compare-wrap:hover .compare-label { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+  .card.processing .compare-after { opacity: .5; }
   .card.processing .thumb-wrap::after {
     content: ''; position: absolute; inset: 0;
     background: linear-gradient(110deg, transparent 30%, rgba(124,255,178,.18) 50%, transparent 70%);
@@ -280,6 +294,33 @@
       </div>
       <p class="font-display text-2xl font-semibold">松开即可上传</p>
       <p class="text-muted mt-2 text-sm">支持 JPG · PNG · WebP · BMP，可多张同传</p>
+    </div>
+  </div>
+
+  <div id="lightbox" class="hidden fixed inset-0 z-[90] flex flex-col" style="background:rgba(0,0,0,.92);backdrop-filter:blur(12px);">
+    <div class="flex items-center justify-between px-5 sm:px-8 py-4 border-b" style="border-color:rgba(255,255,255,.1)">
+      <div>
+        <p id="lbName" class="text-white text-sm font-medium truncate max-w-[60vw]">—</p>
+        <p id="lbInfo" class="text-white/50 text-xs font-mono mt-0.5">—</p>
+      </div>
+      <button id="lbClose" class="w-10 h-10 rounded-xl flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors" aria-label="关闭">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div id="lbCompare" class="flex-1 relative overflow-hidden cursor-col-resize select-none">
+      <div class="absolute inset-0 flex items-center justify-center p-8">
+        <img id="lbOrig" src="" alt="原图" class="max-w-full max-h-full object-contain" draggable="false" />
+      </div>
+      <div id="lbAfterWrap" class="absolute inset-0 flex items-center justify-center p-8" style="clip-path: inset(0 50% 0 0);">
+        <img id="lbAfter" src="" alt="处理后" class="max-w-full max-h-full object-contain" draggable="false" />
+      </div>
+      <div id="lbDivider" class="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-lg" style="left:50%;">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-xl flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/><path d="m15 18-6-6 6-6"/></svg>
+        </div>
+      </div>
+      <span class="absolute bottom-6 left-6 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono text-white" style="background:rgba(0,0,0,.6);backdrop-filter:blur(6px);">原图</span>
+      <span class="absolute bottom-6 right-6 px-3 py-1.5 rounded-lg text-xs font-semibold font-mono text-white" style="background:rgba(0,0,0,.6);backdrop-filter:blur(6px);">处理后</span>
     </div>
   </div>
 
@@ -618,6 +659,15 @@
     downloadZip: $('#downloadZip'),
     downloadAll: $('#downloadAll'),
     dropOverlay: $('#dropOverlay'),
+    lightbox: $('#lightbox'),
+    lbName: $('#lbName'),
+    lbInfo: $('#lbInfo'),
+    lbClose: $('#lbClose'),
+    lbCompare: $('#lbCompare'),
+    lbOrig: $('#lbOrig'),
+    lbAfter: $('#lbAfter'),
+    lbAfterWrap: $('#lbAfterWrap'),
+    lbDivider: $('#lbDivider'),
     themeToggle: $('#themeToggle'),
     iconMoon: $('#iconMoon'),
     iconSun: $('#iconSun'),
@@ -954,12 +1004,16 @@
 
   function removeItem(item) {
     try { URL.revokeObjectURL(item.thumbUrl); } catch (e) {}
+    if (item.resultUrl) { try { URL.revokeObjectURL(item.resultUrl); } catch(e) {} }
     state.items = state.items.filter((i) => i.id !== item.id);
     renderList();
     updateSummary();
   }
   function clearAll() {
-    state.items.forEach((i) => { try { URL.revokeObjectURL(i.thumbUrl); } catch (e) {} });
+    state.items.forEach((i) => {
+      try { URL.revokeObjectURL(i.thumbUrl); } catch (e) {}
+      if (i.resultUrl) { try { URL.revokeObjectURL(i.resultUrl); } catch(e) {} }
+    });
     state.items = [];
     renderList();
     updateSummary();
@@ -968,9 +1022,11 @@
   function cardHTML(item) {
     return `
       <article class="card ${item.status === 'processing' ? 'processing' : ''}" data-id="${item.id}">
-        <div class="thumb-wrap">
-          <img src="${item.thumbUrl}" alt="" loading="lazy" />
+        <div class="thumb-wrap compare-wrap">
+          <img src="${item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-orig" />
+          <img src="${item.resultUrl || item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-after ${item.resultUrl ? '' : 'opacity-0'}" />
           <span class="absolute top-2 left-2 r-badge" style="background:rgba(10,10,11,.6);color:#fff;backdrop-filter:blur(6px);">${FORMAT_LABEL[item.originalType] || 'IMG'}</span>
+          <span class="compare-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>点击放大对比</span>
         </div>
         <div class="p-4">
           <p class="text-sm font-medium truncate" title="${item.name.replace(/"/g, '&quot;')}">${item.name}</p>
@@ -1040,6 +1096,14 @@
     }
     errEl.classList.add('hidden');
 
+    const afterImg = card.querySelector('.compare-after');
+    if (item.resultUrl && afterImg) {
+      afterImg.src = item.resultUrl;
+      afterImg.classList.remove('opacity-0');
+    } else if (afterImg) {
+      afterImg.classList.add('opacity-0');
+    }
+
     if (item.result) {
       dimEl.textContent = `${item.result.width}×${item.result.height}`;
       afterEl.style.color = 'var(--fg)';
@@ -1104,10 +1168,12 @@
     state.processing = true;
     for (const item of state.items) {
       item.status = 'processing';
+      if (item.resultUrl) { try { URL.revokeObjectURL(item.resultUrl); } catch(e){} item.resultUrl = null; }
       updateCard(item);
       updateSummary();
       try {
         item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null);
+        item.resultUrl = URL.createObjectURL(item.result.blob);
         item.status = 'done';
         item.error = null;
       } catch (e) {
@@ -1238,6 +1304,67 @@
     scheduleReprocess();
   }
 
+  function openLightbox(item) {
+    if (!item || !item.resultUrl) return;
+    els.lbName.textContent = item.name;
+    let info = `${FORMAT_LABEL[item.originalType] || 'IMG'} · ${fmtBytes(item.originalSize)}`;
+    if (item.result) {
+      const diff = item.originalSize - item.result.size;
+      const pct = diff > 0 ? `↓${Math.round((diff / item.originalSize) * 100)}%` : (diff < 0 ? `↑${Math.round((-diff / item.originalSize) * 100)}%` : '=');
+      info += `  →  ${FORMAT_LABEL[item.result.format]} · ${fmtBytes(item.result.size)} (${pct})`;
+    }
+    els.lbInfo.textContent = info;
+    els.lbOrig.src = item.thumbUrl;
+    els.lbAfter.src = item.resultUrl;
+    els.lbAfterWrap.style.clipPath = 'inset(0 50% 0 0)';
+    els.lbDivider.style.left = '50%';
+    els.lightbox.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    els.lightbox.classList.add('hidden');
+    els.lbOrig.src = '';
+    els.lbAfter.src = '';
+    document.body.style.overflow = '';
+  }
+
+  function setComparePos(clientX) {
+    const rect = els.lbCompare.getBoundingClientRect();
+    let pct = ((clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(0, Math.min(100, pct));
+    els.lbAfterWrap.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    els.lbDivider.style.left = pct + '%';
+  }
+
+  let lbDragging = false;
+  function initLightboxDrag() {
+    const onMove = (e) => {
+      if (!lbDragging) return;
+      const x = e.touches ? e.touches[0].clientX : e.clientX;
+      setComparePos(x);
+    };
+    const onUp = () => { lbDragging = false; };
+
+    els.lbDivider.addEventListener('mousedown', (e) => { lbDragging = true; e.preventDefault(); });
+    els.lbCompare.addEventListener('mousedown', (e) => {
+      if (e.target === els.lbDivider || els.lbDivider.contains(e.target)) return;
+      lbDragging = true;
+      setComparePos(e.clientX);
+    });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+
+    els.lbDivider.addEventListener('touchstart', (e) => { lbDragging = true; e.preventDefault(); }, { passive: false });
+    els.lbCompare.addEventListener('touchstart', (e) => {
+      if (e.target === els.lbDivider || els.lbDivider.contains(e.target)) return;
+      lbDragging = true;
+      setComparePos(e.touches[0].clientX);
+    }, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onUp);
+  }
+
   function bindEvents() {
     els.dropzone.addEventListener('click', () => els.fileInput.click());
     els.fileInput.addEventListener('change', (e) => {
@@ -1275,13 +1402,28 @@
 
     els.grid.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-act]');
-      if (!btn) return;
-      const card = btn.closest('[data-id]');
-      const id = card && card.dataset.id;
+      if (btn) {
+        const card = btn.closest('[data-id]');
+        const id = card && card.dataset.id;
+        const item = state.items.find((i) => i.id === id);
+        if (!item) return;
+        if (btn.dataset.act === 'delete') removeItem(item);
+        else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+        return;
+      }
+      const card = e.target.closest('[data-id]');
+      if (!card) return;
+      const id = card.dataset.id;
       const item = state.items.find((i) => i.id === id);
-      if (!item) return;
-      if (btn.dataset.act === 'delete') removeItem(item);
-      else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+      if (item && item.resultUrl) openLightbox(item);
+    });
+
+    els.lbClose.addEventListener('click', closeLightbox);
+    els.lightbox.addEventListener('click', (e) => {
+      if (e.target === els.lightbox || e.target === els.lbCompare) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !els.lightbox.classList.contains('hidden')) closeLightbox();
     });
 
     els.clearAll.addEventListener('click', clearAll);
@@ -1346,6 +1488,7 @@
     setFormat(state.format);
     setQuality(state.quality);
     bindEvents();
+    initLightboxDrag();
     renderList();
     updateSummary();
   }
