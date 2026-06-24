@@ -439,7 +439,7 @@
           <div class="relative w-full max-w-[220px] sm:max-w-[260px] md:max-w-[300px] aspect-square">
             <div class="absolute -inset-6 rounded-full opacity-50 blur-3xl" style="background:radial-gradient(circle, var(--grape) 0%, var(--accent) 50%, transparent 70%);"></div>
             <div class="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
-              <img src="gif/ims2.gif" alt="动态展示" class="w-full h-full object-cover block" />
+              <img id="heroGif" src="gif/ims1.gif" alt="动态展示" class="w-full h-full object-cover block" />
             </div>
             <div class="absolute -top-2.5 -right-2.5 glass rounded-xl px-2.5 py-1.5 text-[11px] font-semibold shadow-lg whitespace-nowrap z-10" style="background:linear-gradient(135deg,var(--accent),var(--grape));color:#0a0a0b;">
               ⚡ 实时预览
@@ -760,6 +760,7 @@
     toast: $('#toast'),
     toastMsg: $('#toastMsg'),
     year: $('#year'),
+    heroGif: $('#heroGif'),
     cropper: $('#cropper'),
     cropImage: $('#cropImage'),
     cropBox: $('#cropBox'),
@@ -1800,6 +1801,7 @@
       document.documentElement.classList.toggle('dark', !isLight);
       els.iconMoon.classList.toggle('hidden', isLight);
       els.iconSun.classList.toggle('hidden', !isLight);
+      if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
       try { localStorage.setItem('pc-theme', isLight ? 'light' : 'dark'); } catch (e) {}
     });
 
@@ -1817,12 +1819,14 @@
   function initTheme() {
     let saved = 'light';
     try { saved = localStorage.getItem('pc-theme') || 'light'; } catch (e) {}
-    if (saved === 'light') {
+    const isLight = saved === 'light';
+    if (isLight) {
       document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
       els.iconMoon.classList.add('hidden');
       els.iconSun.classList.remove('hidden');
     }
+    if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
   }
 
   function init() {
