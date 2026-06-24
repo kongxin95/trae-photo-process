@@ -529,16 +529,22 @@
           </div>
         </div>
         <div class="glass rounded-3xl p-6 sm:p-8 text-center flex flex-col items-center">
-          <div class="qr-box w-64 sm:w-72 lg:w-80 mb-6 overflow-hidden">
-            <img src="donate.png" alt="赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
+          <div class="flex flex-col gap-6 items-center justify-center w-full mb-6">
+            <div class="flex flex-col items-center gap-3">
+              <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
+                <img src="wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
+              </div>
+              <span class="text-sm font-medium text-muted">微信赞赏</span>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+              <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
+                <img src="alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
+              </div>
+              <span class="text-sm font-medium text-muted">支付宝</span>
+            </div>
           </div>
           <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡</h3>
           <p class="text-muted text-sm mt-2">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
-          <div class="flex gap-2 mt-5">
-            <span class="chip text-xs">微信</span>
-            <span class="chip text-xs">支付宝</span>
-          </div>
-          <p class="text-[10px] text-faint mt-5 font-mono">替换上方占位为你的赞赏码图片</p>
         </div>
       </div>
     </section>
