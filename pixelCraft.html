@@ -354,26 +354,42 @@
   </header>
 
   <main id="top" class="relative z-10">
-    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-8 sm:pt-10 pb-0">
-      <div class="reveal in text-center max-w-3xl mx-auto">
-        <span class="chip mb-4 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
-        <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.6rem,4.5vw,3rem)] leading-[1.05]">
-          在浏览器里，优雅地<span class="grad-text">重塑</span>每一张图片
-        </h1>
-        <p class="mt-3 text-muted text-sm sm:text-base leading-relaxed max-w-xl mx-auto">
-          压缩、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
-        </p>
-        <div class="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-          <a href="#workspace" class="btn btn-primary px-5 py-2.5 text-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
-            开始处理图片
-          </a>
-          <a href="#features" class="btn btn-ghost px-5 py-2.5 text-sm">了解特性</a>
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-6 sm:pt-8 pb-0">
+      <div class="grid md:grid-cols-[1.2fr_1fr] gap-6 lg:gap-10 items-center">
+        <div class="text-center md:text-left max-w-2xl mx-auto md:mx-0 order-2 md:order-1">
+          <span class="chip mb-3 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
+          <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.05]">
+            在浏览器里，优雅地<span class="grad-text">重塑</span>每一张图片
+          </h1>
+          <p class="mt-2.5 text-muted text-sm sm:text-base leading-relaxed max-w-xl md:max-w-none mx-auto md:mx-0">
+            压缩、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
+          </p>
+          <div class="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
+            <a href="#workspace" class="btn btn-primary px-5 py-2.5 text-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
+              开始处理图片
+            </a>
+            <a href="#features" class="btn btn-ghost px-5 py-2.5 text-sm">了解特性</a>
+          </div>
+          <div class="mt-3.5 flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-1.5 text-[11px] text-faint font-mono">
+            <span>JPG · PNG · WebP · BMP</span><span>·</span>
+            <span>Canvas API 本地编码</span><span>·</span>
+            <span>ZIP 批量下载</span>
+          </div>
         </div>
-        <div class="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-[11px] text-faint font-mono">
-          <span>JPG · PNG · WebP · BMP</span><span>·</span>
-          <span>Canvas API 本地编码</span><span>·</span>
-          <span>ZIP 批量下载</span>
+        <div class="relative flex items-center justify-center order-1 md:order-2">
+          <div class="relative w-full max-w-xs sm:max-w-sm md:max-w-md">
+            <div class="absolute -inset-4 rounded-[2rem] opacity-40 blur-2xl" style="background:radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);"></div>
+            <div class="relative glass rounded-3xl p-2 shadow-2xl overflow-hidden">
+              <img src="ims1.gif" alt="动态展示" class="w-full h-auto rounded-2xl block" style="min-height:160px;background:var(--panel);" />
+            </div>
+            <div class="absolute -top-3 -right-3 glass rounded-2xl px-3 py-2 text-xs font-semibold shadow-xl whitespace-nowrap" style="background:linear-gradient(135deg,var(--accent),var(--grape));color:#0a0a0b;">
+              ⚡ 实时预览
+            </div>
+            <div class="absolute -bottom-3 -left-3 glass rounded-2xl px-3 py-2 text-xs font-medium shadow-xl whitespace-nowrap">
+              <span class="text-accent">●</span> 本地处理
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -528,23 +544,29 @@
             <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
           </div>
         </div>
-        <div class="glass rounded-3xl p-6 sm:p-8 text-center flex flex-col items-center">
-          <div class="flex flex-col gap-6 items-center justify-center w-full mb-6">
-            <div class="flex flex-col items-center gap-3">
+        <div class="glass rounded-3xl p-6 sm:p-8">
+          <div class="flex flex-col items-center justify-center w-full">
+            <div class="relative mb-6">
+              <div class="absolute -inset-3 rounded-full opacity-50 blur-xl" style="background:radial-gradient(circle, var(--accent) 0%, transparent 70%);"></div>
+              <div class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 shadow-2xl" style="border-color:var(--panel);">
+                <img src="ims3.gif" alt="" class="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div class="flex flex-col items-center gap-5">
               <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
                 <img src="wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
               </div>
               <span class="text-sm font-medium text-muted">微信赞赏</span>
-            </div>
-            <div class="flex flex-col items-center gap-3">
               <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
                 <img src="alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
               </div>
               <span class="text-sm font-medium text-muted">支付宝</span>
             </div>
           </div>
-          <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡</h3>
-          <p class="text-muted text-sm mt-2">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
+          <div class="text-center mt-6">
+            <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡 ☕</h3>
+            <p class="text-muted text-sm mt-1.5">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
+          </div>
         </div>
       </div>
     </section>
