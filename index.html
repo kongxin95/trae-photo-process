@@ -12,6 +12,38 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<!-- ====== 广告变现配置区 ======
+  你在国内、无 ICP 备案，推荐以下两种方案（可单用、也可组合互补）：
+
+  方案A：Google AdSense（收益最高，需过审，不要求备案）
+    申请 → https://www.google.com/adsense
+    需要：隐私政策 / 关于我们等合规页面 + 自定义域名，过审后创建"展示广告"单元
+    收益：中文站约 $1-5/千次展示，$100 起付，招商银行电汇收款
+    用法：填入 publisherId 和各广告位的 slot ID 即可
+
+  方案B：PropellerAds / Monetag（注册即用，无需过审）
+    申请 → https://www.propellerads.com 或 https://www.monetag.com
+    收益：较低但零等待，$5 起付，每周付款，可与 AdSense 同时使用
+    用法：把后台拿到的广告代码（含 <script> 整段）粘贴到对应字段
+
+  两种方案可组合：优先 AdSense，AdSense 未填充的位置用 PropellerAds 补充
+  —— 填上对应字段即生效，留空 = 该位置保持占位 ——
+-->
+<script>
+  window.AD_CONFIG = {
+    adsense: {            // 方案A：Google AdSense
+      publisherId: '',    // 发布商 ID，如 'ca-pub-1234567890123456'
+      bannerSlot: '',     // 顶部横幅广告单元 ID（AdSense 后台创建后获得）
+      sidebarSlot: '',    // 侧栏广告单元 ID
+    },
+    propeller: {          // 方案B：PropellerAds / Monetag
+      bannerCode: '',     // 顶部横幅广告代码（含 <script> 整段）
+      sidebarCode: '',    // 侧栏广告代码
+    },
+  };
+</script>
+
 <script>
   tailwind.config = {
     theme: {
@@ -453,8 +485,8 @@
     </section>
 
     <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-1 pb-0">
-      <div class="ad-slot h-[90px] flex items-center justify-center">
-        <div class="text-center">
+      <div id="ad-banner" class="ad-slot h-[90px] flex items-center justify-center">
+        <div class="ad-placeholder text-center">
           <p class="font-display font-semibold text-sm text-fg">你的广告位 · 728 × 90</p>
           <p class="text-[11px] text-faint mt-0.5 font-mono">替换此占位为联盟广告代码即可变现</p>
         </div>
@@ -596,8 +628,8 @@
 
     <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
       <div class="grid lg:grid-cols-[1.4fr_1fr] gap-5">
-        <div class="ad-slot h-[260px] flex items-center justify-center p-8">
-          <div class="text-center">
+        <div id="ad-sidebar" class="ad-slot h-[260px] flex items-center justify-center p-8">
+          <div class="ad-placeholder text-center">
             <p class="font-display font-semibold text-lg text-fg">侧栏广告位 · 300 × 250</p>
             <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
           </div>
@@ -1855,6 +1887,60 @@
 
   init();
 })();
+
+  // ====== 广告加载器：读取 AD_CONFIG 自动填充广告位 ======
+  (function loadAds(){
+    var cfg = window.AD_CONFIG || {};
+    function $(s){ return document.querySelector(s); }
+
+    // 动态注入第三方广告代码，确保其中 <script> 标签会执行
+    function injectHTML(el, code){
+      if (!el) return;
+      var wrap = document.createElement('div');
+      wrap.innerHTML = code;
+      var scripts = wrap.querySelectorAll('script');
+      for (var i = 0; i < scripts.length; i++){
+        var old = scripts[i], s = document.createElement('script');
+        var attrs = old.attributes;
+        for (var j = 0; j < attrs.length; j++) s.setAttribute(attrs[j].name, attrs[j].value);
+        s.textContent = old.textContent;
+        old.parentNode.replaceChild(s, old);
+      }
+      while (el.firstChild) el.removeChild(el.firstChild);
+      el.appendChild(wrap);
+    }
+
+    // 渲染单个 AdSense 广告单元
+    function renderAdsense(el, slotId, pubId, format){
+      if (!el || !slotId) return;
+      var ins = document.createElement('ins');
+      ins.className = 'adsbygoogle';
+      ins.style.display = 'block';
+      ins.setAttribute('data-ad-client', pubId);
+      ins.setAttribute('data-ad-slot', slotId);
+      ins.setAttribute('data-ad-format', format || 'auto');
+      ins.setAttribute('data-full-width-responsive', 'true');
+      while (el.firstChild) el.removeChild(el.firstChild);
+      el.appendChild(ins);
+      try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e){}
+    }
+
+    var ads = cfg.adsense || {}, pro = cfg.propeller || {};
+
+    // 方案A：Google AdSense —— 先加载官方库再渲染广告单元
+    if (ads.publisherId){
+      var s = document.createElement('script');
+      s.async = true; s.crossOrigin = 'anonymous';
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ads.publisherId;
+      document.head.appendChild(s);
+      renderAdsense($('#ad-banner'), ads.bannerSlot, ads.publisherId, 'horizontal');
+      renderAdsense($('#ad-sidebar'), ads.sidebarSlot, ads.publisherId, 'rectangle');
+    }
+
+    // 方案B：PropellerAds / Monetag —— 仅填充 AdSense 未占用的位置（互补填充）
+    if (pro.bannerCode && !ads.bannerSlot) injectHTML($('#ad-banner'), pro.bannerCode);
+    if (pro.sidebarCode && !ads.sidebarSlot) injectHTML($('#ad-sidebar'), pro.sidebarCode);
+  })();
 </script>
 </body>
 </html>
