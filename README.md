@@ -30,7 +30,7 @@ PixelCraft 是一个单文件、零依赖、打开即用的在线图片处理工
 ## 🚀 快速开始
 
 ### 方式一：直接打开（最简单）
-双击 `pixelCraft.html`，用任意现代浏览器打开即可使用。
+双击 `index.html`，用任意现代浏览器打开即可使用。
 
 ### 方式二：本地静态服务器（推荐，避免部分浏览器对本地文件的限制）
 在项目目录下任选一种方式启动：
@@ -46,7 +46,7 @@ npx http-server -p 8000
 php -S 127.0.0.1:8000
 ```
 
-然后访问 `http://127.0.0.1:8000/pixelCraft.html`。
+然后访问 `http://127.0.0.1:8000/index.html`。
 
 > 推荐使用 Chrome / Edge / Firefox 最新版本，以获得最佳 WebP 编码与 `createImageBitmap` 性能。
 
@@ -70,21 +70,24 @@ php -S 127.0.0.1:8000
 
 ```
 .
-├── pixelCraft.html              # 唯一应用文件（HTML + CSS + JS 全内联）
-├── README.md                    # 本文档
-├── ims1.gif / ims2.gif / ims3.gif # 动效展示素材（可选）
-├── wechat.png / alipay.png      # 赞赏码素材（可选）
-└── .trae/
-    └── documents/
-        ├── PRD-图片处理工具.md    # 产品需求文档
-        └── 技术架构-图片处理工具.md # 技术架构文档
+├── index.html                     # 唯一应用文件（HTML + CSS + JS 全内联）
+├── README.md                      # 本文档
+├── png/                           # PNG 图片素材
+│   ├── wechat.png                 # 微信赞赏码
+│   ├── alipay.png                 # 支付宝收款码
+│   └── donate.png                 # 备用赞赏图
+├── jpg/                           # JPG 图片素材（预留）
+└── gif/                           # GIF 动效素材
+    ├── ims1.gif
+    ├── ims2.gif
+    └── ims3.gif
 ```
 
 ---
 
 ## 🧭 使用流程
 
-1. 打开 `pixelCraft.html`（默认亮色主题，可右上角切换）。
+1. 打开 `index.html`（默认亮色主题，可右上角切换）。
 2. 把图片拖到上传区，或点击上传区选择文件（可多选）。
 3. 在左侧「处理设置」面板选择输出格式（JPG / PNG / WebP）。
 4. 拖动质量滑动条，右侧卡片与顶部「预估体积」面板会实时更新。
@@ -109,13 +112,13 @@ php -S 127.0.0.1:8000
 ### 替换赞赏码
 页面底部「请作者喝杯咖啡」区域有两个二维码框（微信 + 支付宝）：
 
-- 将 `wechat.png` 替换为你的微信赞赏码图片
-- 将 `alipay.png` 替换为你的支付宝收款码图片
+- 将 `png/wechat.png` 替换为你的微信赞赏码图片
+- 将 `png/alipay.png` 替换为你的支付宝收款码图片
 
 文件名保持不变即可自动加载，或修改 HTML 中的 `src` 属性。
 
 ### 调整强调色
-在 `pixelCraft.html` 顶部的 `<style>` 块中修改 CSS 变量即可全局换色：
+在 `index.html` 顶部的 `<style>` 块中修改 CSS 变量即可全局换色：
 
 ```css
 :root {

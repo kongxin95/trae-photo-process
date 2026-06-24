@@ -439,7 +439,7 @@
           <div class="relative w-full max-w-[220px] sm:max-w-[260px] md:max-w-[300px] aspect-square">
             <div class="absolute -inset-6 rounded-full opacity-50 blur-3xl" style="background:radial-gradient(circle, var(--grape) 0%, var(--accent) 50%, transparent 70%);"></div>
             <div class="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
-              <img src="ims2.gif" alt="动态展示" class="w-full h-full object-cover block" />
+              <img id="heroGif" src="gif/ims1.gif" alt="动态展示" class="w-full h-full object-cover block" />
             </div>
             <div class="absolute -top-2.5 -right-2.5 glass rounded-xl px-2.5 py-1.5 text-[11px] font-semibold shadow-lg whitespace-nowrap z-10" style="background:linear-gradient(135deg,var(--accent),var(--grape));color:#0a0a0b;">
               ⚡ 实时预览
@@ -607,16 +607,16 @@
             <div class="relative mb-6">
               <div class="absolute -inset-3 rounded-full opacity-50 blur-xl" style="background:radial-gradient(circle, var(--accent) 0%, transparent 70%);"></div>
               <div class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 shadow-2xl" style="border-color:var(--panel);">
-                <img src="ims3.gif" alt="" class="w-full h-full object-cover" />
+                <img src="gif/ims3.gif" alt="" class="w-full h-full object-cover" />
               </div>
             </div>
             <div class="flex flex-col items-center gap-5">
               <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
-                <img src="wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
+                <img src="png/wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
               </div>
               <span class="text-sm font-medium text-muted">微信赞赏</span>
               <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
-                <img src="alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
+                <img src="png/alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
               </div>
               <span class="text-sm font-medium text-muted">支付宝</span>
             </div>
@@ -630,7 +630,7 @@
     </section>
 
     <footer class="border-t mt-10" style="border-color:var(--line)">
-      <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="max-w-7xl mx-auto px-5 sm:px-8 py-10 grid sm:grid-cols-2 lg:grid-cols-5 gap-8">
         <div class="lg:col-span-2">
           <div class="flex items-center gap-2.5 mb-3">
             <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
@@ -654,6 +654,18 @@
             <li>裁剪/压缩全程本地</li>
             <li>无后端服务器</li>
             <li>无网络请求/数据采集</li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-fg uppercase tracking-wider mb-3">联系反馈</p>
+          <ul class="space-y-2 text-sm text-muted">
+            <li>欢迎意见与建议</li>
+            <li>
+              <a href="mailto:zhangxl_kx@163.com" class="inline-flex items-center gap-1.5 transition hover:opacity-80 break-all" style="color:var(--accent)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                zhangxl_kx@163.com
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -760,6 +772,7 @@
     toast: $('#toast'),
     toastMsg: $('#toastMsg'),
     year: $('#year'),
+    heroGif: $('#heroGif'),
     cropper: $('#cropper'),
     cropImage: $('#cropImage'),
     cropBox: $('#cropBox'),
@@ -1800,6 +1813,7 @@
       document.documentElement.classList.toggle('dark', !isLight);
       els.iconMoon.classList.toggle('hidden', isLight);
       els.iconSun.classList.toggle('hidden', !isLight);
+      if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
       try { localStorage.setItem('pc-theme', isLight ? 'light' : 'dark'); } catch (e) {}
     });
 
@@ -1817,12 +1831,14 @@
   function initTheme() {
     let saved = 'light';
     try { saved = localStorage.getItem('pc-theme') || 'light'; } catch (e) {}
-    if (saved === 'light') {
+    const isLight = saved === 'light';
+    if (isLight) {
       document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
       els.iconMoon.classList.add('hidden');
       els.iconSun.classList.remove('hidden');
     }
+    if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
   }
 
   function init() {
