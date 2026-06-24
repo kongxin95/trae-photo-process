@@ -32,6 +32,7 @@
 -->
 <script>
   window.AD_CONFIG = {
+    show: false,          // 广告总开关：false = 隐藏所有广告位且不加载广告；true = 按下方配置显示
     adsense: {            // 方案A：Google AdSense
       publisherId: '',    // 发布商 ID，如 'ca-pub-1234567890123456'
       bannerSlot: '',     // 顶部横幅广告单元 ID（AdSense 后台创建后获得）
@@ -471,7 +472,8 @@
           <div class="relative w-full max-w-[220px] sm:max-w-[260px] md:max-w-[300px] aspect-square">
             <div class="absolute -inset-6 rounded-full opacity-50 blur-3xl" style="background:radial-gradient(circle, var(--grape) 0%, var(--accent) 50%, transparent 70%);"></div>
             <div class="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
-              <img id="heroGif" src="gif/ims1.gif" alt="动态展示" class="w-full h-full object-cover block" />
+              <img id="heroGifLight" src="gif/ims1.gif" alt="动态展示" class="w-full h-full object-cover block" />
+              <img id="heroGifDark" src="gif/ims2.gif" alt="" class="w-full h-full object-cover block hidden" />
             </div>
             <div class="absolute -top-2.5 -right-2.5 glass rounded-xl px-2.5 py-1.5 text-[11px] font-semibold shadow-lg whitespace-nowrap z-10" style="background:linear-gradient(135deg,var(--accent),var(--grape));color:#0a0a0b;">
               ⚡ 实时预览
@@ -627,8 +629,8 @@
     </section>
 
     <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
-      <div class="grid lg:grid-cols-[1.4fr_1fr] gap-5">
-        <div id="ad-sidebar" class="ad-slot h-[260px] flex items-center justify-center p-8">
+      <div id="supportGrid" class="grid gap-5">
+        <div id="ad-sidebar" class="ad-slot h-[260px] flex items-center justify-center p-8 hidden">
           <div class="ad-placeholder text-center">
             <p class="font-display font-semibold text-lg text-fg">侧栏广告位 · 300 × 250</p>
             <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
@@ -642,15 +644,19 @@
                 <img src="gif/ims3.gif" alt="" class="w-full h-full object-cover" />
               </div>
             </div>
-            <div class="flex flex-col items-center gap-5">
-              <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
-                <img src="png/wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
+            <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-8 sm:gap-10 w-full">
+              <div class="flex flex-col items-center gap-3">
+                <div class="qr-box w-[min(100%,28rem)] sm:w-[30rem] lg:w-[32rem] overflow-hidden">
+                  <img src="png/wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-3" />
+                </div>
+                <span class="text-[2rem] font-medium text-muted">微信赞赏</span>
               </div>
-              <span class="text-sm font-medium text-muted">微信赞赏</span>
-              <div class="qr-box w-64 sm:w-72 lg:w-80 overflow-hidden">
-                <img src="png/alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
+              <div class="flex flex-col items-center gap-3">
+                <div class="qr-box w-[min(100%,28rem)] sm:w-[30rem] lg:w-[32rem] overflow-hidden">
+                  <img src="png/alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-3" />
+                </div>
+                <span class="text-[2rem] font-medium text-muted">支付宝</span>
               </div>
-              <span class="text-sm font-medium text-muted">支付宝</span>
             </div>
           </div>
           <div class="text-center mt-6">
@@ -804,7 +810,8 @@
     toast: $('#toast'),
     toastMsg: $('#toastMsg'),
     year: $('#year'),
-    heroGif: $('#heroGif'),
+    heroGifLight: $('#heroGifLight'),
+    heroGifDark: $('#heroGifDark'),
     cropper: $('#cropper'),
     cropImage: $('#cropImage'),
     cropBox: $('#cropBox'),
@@ -1845,7 +1852,8 @@
       document.documentElement.classList.toggle('dark', !isLight);
       els.iconMoon.classList.toggle('hidden', isLight);
       els.iconSun.classList.toggle('hidden', !isLight);
-      if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
+      if (els.heroGifLight) els.heroGifLight.classList.toggle('hidden', !isLight);
+      if (els.heroGifDark) els.heroGifDark.classList.toggle('hidden', isLight);
       try { localStorage.setItem('pc-theme', isLight ? 'light' : 'dark'); } catch (e) {}
     });
 
@@ -1870,7 +1878,8 @@
       els.iconMoon.classList.add('hidden');
       els.iconSun.classList.remove('hidden');
     }
-    if (els.heroGif) els.heroGif.src = isLight ? 'gif/ims1.gif' : 'gif/ims2.gif';
+    if (els.heroGifLight) els.heroGifLight.classList.toggle('hidden', !isLight);
+    if (els.heroGifDark) els.heroGifDark.classList.toggle('hidden', isLight);
   }
 
   function init() {
@@ -1892,6 +1901,18 @@
   (function loadAds(){
     var cfg = window.AD_CONFIG || {};
     function $(s){ return document.querySelector(s); }
+
+    // 总开关关闭时：隐藏所有广告位且不加载任何广告脚本
+    if (cfg.show === false) {
+      var b = $('#ad-banner'), sb = $('#ad-sidebar');
+      if (b) { var sec = b.closest('section'); if (sec) sec.classList.add('hidden'); }
+      if (sb) sb.classList.add('hidden');
+      return;
+    }
+    // 开启时：恢复侧栏广告位显示与双栏布局
+    var sbShow = $('#ad-sidebar'), grid = $('#supportGrid');
+    if (sbShow) sbShow.classList.remove('hidden');
+    if (grid) { grid.classList.add('lg:grid-cols-[1.4fr_1fr]'); grid.classList.remove('grid-cols-1'); }
 
     // 动态注入第三方广告代码，确保其中 <script> 标签会执行
     function injectHTML(el, code){
