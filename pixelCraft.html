@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN" class="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="PixelCraft — 纯前端在线图片处理工具：压缩、格式转换、批量打包，全部在浏览器本地完成，隐私无忧。" />
+<meta name="description" content="PixelCraft — 纯前端在线图片处理工具：压缩、裁剪、格式转换、批量打包，全部在浏览器本地完成，隐私无忧。" />
 <title>PixelCraft · 极简图片处理工具</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -88,9 +88,27 @@
     --fg: #0A0A0B;
     --muted: rgba(10, 10, 11, .62);
     --faint: rgba(10, 10, 11, .40);
-    --accent-glow: rgba(124, 255, 178, .55);
+    --accent: #0EA57E;
+    --accent-soft: #10B981;
+    --accent-glow: rgba(14, 165, 126, .35);
+    --grape: #7C3AED;
+    --grape-glow: rgba(124, 58, 237, .3);
+    --good: #059669;
+    --warn: #D97706;
+    --bad: #DC2626;
     --track: rgba(10, 10, 11, .12);
   }
+  html.light .btn-primary { color: #fff; }
+  html.light .btn-soft { background: rgba(14, 165, 126, .10); border-color: rgba(14, 165, 126, .30); }
+  html.light .btn-soft:hover { background: rgba(14, 165, 126, .16); }
+  html.light .chip.active { background: rgba(14, 165, 126, .12); border-color: rgba(14, 165, 126, .45); }
+  html.light .range::-webkit-slider-thumb { box-shadow: 0 0 0 5px rgba(14, 165, 126, .18), 0 6px 16px rgba(0,0,0,.15); }
+  html.light .range::-webkit-slider-thumb:hover { box-shadow: 0 0 0 7px rgba(14, 165, 126, .22), 0 8px 20px rgba(0,0,0,.2); }
+  html.light .range::-moz-range-thumb { box-shadow: 0 0 0 5px rgba(14, 165, 126, .18), 0 6px 16px rgba(0,0,0,.15); }
+  html.light .card.processing .thumb-wrap::after { background: linear-gradient(110deg, transparent 30%, rgba(14, 165, 126, .18) 50%, transparent 70%); }
+  html.light .r-down { background: rgba(14, 165, 126, .12); }
+  html.light .dropzone:hover { background: rgba(14, 165, 126, .04); }
+  html.light ::selection { background: rgba(14, 165, 126, .25); }
 
   * { -webkit-tap-highlight-color: transparent; }
   html { scroll-behavior: smooth; scroll-padding-top: 96px; }
@@ -200,7 +218,8 @@
   }
   .card .thumb-wrap img { width: 100%; height: 100%; object-fit: contain; }
   .card .compare-wrap { cursor: zoom-in; }
-  .card .compare-img { position: absolute; inset: 0; transition: transform .4s ease; }
+  .card .compare-img { position: absolute; inset: 0; transition: transform .4s ease, filter .4s ease; }
+  .card .compare-img.crop-dimmed { filter: brightness(0.35) saturate(0.6); }
   .card .compare-after { opacity: 1; }
   .card .compare-wrap:hover .compare-after { transform: scale(1.04); }
   .card .compare-label {
@@ -324,6 +343,45 @@
     </div>
   </div>
 
+  <div id="cropper" class="hidden fixed inset-0 z-[95] flex flex-col" style="background:rgba(0,0,0,.94);backdrop-filter:blur(12px);">
+    <div class="flex items-center justify-between px-5 sm:px-8 py-4 border-b" style="border-color:rgba(255,255,255,.1)">
+      <div>
+        <p class="text-white text-sm font-semibold">自由裁剪</p>
+        <p id="cropInfo" class="text-white/50 text-xs font-mono mt-0.5">—</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="cropReset" class="px-4 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm transition-colors">重置</button>
+        <button id="cropCancel" class="px-4 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 text-sm transition-colors">取消</button>
+        <button id="cropConfirm" class="btn btn-primary px-5 py-2 text-sm">确认裁剪</button>
+      </div>
+    </div>
+    <div class="flex-1 flex items-center justify-center p-4 sm:p-8 relative overflow-hidden" id="cropStage">
+      <div id="cropImageWrap" class="relative">
+        <img id="cropImage" src="" alt="" class="block max-w-full max-h-[70vh] select-none" draggable="false" />
+        <div id="cropBox" class="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,.5)] cursor-move" style="left:10%;top:10%;width:80%;height:80%;">
+          <div class="absolute inset-0 border border-white/30" style="background-image:linear-gradient(to right, rgba(255,255,255,.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.3) 1px, transparent 1px); background-size: 33.33% 33.33%;"></div>
+          <div class="crop-handle handle-nw absolute -top-1.5 -left-1.5 w-3 h-3 bg-white rounded-sm cursor-nw-resize shadow"></div>
+          <div class="crop-handle handle-n absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-sm cursor-n-resize shadow"></div>
+          <div class="crop-handle handle-ne absolute -top-1.5 -right-1.5 w-3 h-3 bg-white rounded-sm cursor-ne-resize shadow"></div>
+          <div class="crop-handle handle-e absolute top-1/2 -translate-y-1/2 -right-1.5 w-3 h-3 bg-white rounded-sm cursor-e-resize shadow"></div>
+          <div class="crop-handle handle-se absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white rounded-sm cursor-se-resize shadow"></div>
+          <div class="crop-handle handle-s absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-sm cursor-s-resize shadow"></div>
+          <div class="crop-handle handle-sw absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white rounded-sm cursor-sw-resize shadow"></div>
+          <div class="crop-handle handle-w absolute top-1/2 -translate-y-1/2 -left-1.5 w-3 h-3 bg-white rounded-sm cursor-w-resize shadow"></div>
+        </div>
+      </div>
+    </div>
+    <div class="px-5 sm:px-8 py-4 border-t flex items-center justify-center gap-2 flex-wrap" style="border-color:rgba(255,255,255,.1)">
+      <span class="text-white/50 text-xs mr-1">比例：</span>
+      <button class="crop-ratio chip text-xs py-1.5 active" data-ratio="free">自由</button>
+      <button class="crop-ratio chip text-xs py-1.5" data-ratio="1:1">1:1</button>
+      <button class="crop-ratio chip text-xs py-1.5" data-ratio="4:3">4:3</button>
+      <button class="crop-ratio chip text-xs py-1.5" data-ratio="16:9">16:9</button>
+      <button class="crop-ratio chip text-xs py-1.5" data-ratio="3:4">3:4</button>
+      <button class="crop-ratio chip text-xs py-1.5" data-ratio="9:16">9:16</button>
+    </div>
+  </div>
+
   <header class="sticky top-0 z-50 glass-strong border-b" style="border-color:var(--line)">
     <div class="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
       <a href="#top" class="flex items-center gap-2.5 group">
@@ -357,12 +415,12 @@
     <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-6 sm:pt-8 pb-0">
       <div class="grid md:grid-cols-[1.2fr_1fr] gap-6 lg:gap-10 items-center">
         <div class="text-center md:text-left max-w-2xl mx-auto md:mx-0 order-2 md:order-1">
-          <span class="chip mb-3 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 纯前端 · 零上传 · 永久免费</span>
+          <span class="chip mb-3 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 裁剪 · 压缩 · 格式转换</span>
           <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.05]">
             在浏览器里，优雅地<span class="grad-text">重塑</span>每一张图片
           </h1>
           <p class="mt-2.5 text-muted text-sm sm:text-base leading-relaxed max-w-xl md:max-w-none mx-auto md:mx-0">
-            压缩、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
+            压缩、裁剪、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
           </p>
           <div class="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
             <a href="#workspace" class="btn btn-primary px-5 py-2.5 text-sm">
@@ -407,7 +465,7 @@
       <div class="flex items-end justify-between mb-6">
         <div>
           <h2 class="font-display text-2xl sm:text-3xl font-bold tracking-tight">工作台</h2>
-          <p class="text-muted text-sm mt-1.5">拖入图片，选择格式与质量，一键导出。</p>
+          <p class="text-muted text-sm mt-1.5">拖入图片，裁剪、压缩、转换格式，一键导出。</p>
         </div>
       </div>
 
@@ -431,8 +489,8 @@
           <div class="mb-6">
             <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-3">输出格式</label>
             <div id="formatGroup" class="grid grid-cols-3 gap-2">
-              <button class="chip justify-center" data-format="image/jpeg">JPG</button>
-              <button class="chip justify-center active" data-format="image/png">PNG</button>
+              <button class="chip justify-center active" data-format="image/jpeg">JPG</button>
+              <button class="chip justify-center" data-format="image/png">PNG</button>
               <button class="chip justify-center" data-format="image/webp">WebP</button>
             </div>
           </div>
@@ -440,21 +498,21 @@
           <div class="mb-6">
             <div class="flex items-center justify-between mb-3">
               <label id="qualityLabel" class="text-xs font-semibold text-muted uppercase tracking-wider">压缩质量</label>
-              <span id="qualityValue" class="font-mono text-sm text-accent font-semibold">0.80</span>
+              <span id="qualityValue" class="font-mono text-sm text-accent font-semibold">1.00</span>
             </div>
-            <input id="qualityRange" type="range" min="0.1" max="1" step="0.05" value="0.8" class="range" />
+            <input id="qualityRange" type="range" min="0.1" max="1" step="0.01" value="1" class="range" />
             <div id="qualityTicks" class="flex justify-between text-[10px] text-faint font-mono mt-2"><span>0.1</span><span>0.5</span><span>1.0</span></div>
             <div id="qualityPresets" class="grid grid-cols-4 gap-2 mt-3">
-              <button class="chip justify-center text-xs py-1.5" data-q="1">100%</button>
-              <button class="chip justify-center text-xs py-1.5" data-q="0.8">80%</button>
-              <button class="chip justify-center text-xs py-1.5" data-q="0.6">60%</button>
               <button class="chip justify-center text-xs py-1.5" data-q="0.4">40%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="0.6">60%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="0.8">80%</button>
+              <button class="chip justify-center text-xs py-1.5" data-q="1">100%</button>
             </div>
             <div id="pngPresets" class="hidden grid grid-cols-4 gap-2 mt-3">
-              <button class="chip justify-center text-xs py-1.5" data-colors="256">256</button>
-              <button class="chip justify-center text-xs py-1.5" data-colors="128">128</button>
-              <button class="chip justify-center text-xs py-1.5" data-colors="64">64</button>
               <button class="chip justify-center text-xs py-1.5" data-colors="32">32</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="64">64</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="128">128</button>
+              <button class="chip justify-center text-xs py-1.5" data-colors="256">256</button>
             </div>
             <p id="pngNote" class="hidden text-[11px] text-faint mt-3 leading-relaxed">PNG 通过减少颜色数压缩体积，适合截图、图标、文字类图片。</p>
           </div>
@@ -531,7 +589,7 @@
         <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
           <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>
           <h3 class="font-display font-semibold mb-1.5">格式自由</h3>
-          <p class="text-sm text-muted leading-relaxed">JPG / PNG / WebP 互转，质量从 0.1 到 1.0 精细可控。</p>
+          <p class="text-sm text-muted leading-relaxed">JPG / PNG / WebP 互转，裁剪尺寸，压缩质量从 0.1 到 1.0 精细可控。</p>
         </div>
       </div>
     </section>
@@ -585,7 +643,7 @@
         <div>
           <p class="text-xs font-semibold text-fg uppercase tracking-wider mb-3">技术声明</p>
           <ul class="space-y-2 text-sm text-muted">
-            <li>Canvas API 本地编码</li>
+            <li>Canvas API 裁剪/压缩</li>
             <li>JSZip 批量打包</li>
             <li>Tailwind CSS 样式</li>
           </ul>
@@ -593,9 +651,9 @@
         <div>
           <p class="text-xs font-semibold text-fg uppercase tracking-wider mb-3">隐私承诺</p>
           <ul class="space-y-2 text-sm text-muted">
+            <li>裁剪/压缩全程本地</li>
             <li>无后端服务器</li>
-            <li>无网络请求</li>
-            <li>无数据采集</li>
+            <li>无网络请求/数据采集</li>
           </ul>
         </div>
       </div>
@@ -652,8 +710,8 @@
 
   const state = {
     items: [],
-    format: 'image/png',
-    quality: 0.8,
+    format: 'image/jpeg',
+    quality: 1,
     pngColors: 256,
     keepName: true,
     reprocessTimer: null,
@@ -702,6 +760,15 @@
     toast: $('#toast'),
     toastMsg: $('#toastMsg'),
     year: $('#year'),
+    cropper: $('#cropper'),
+    cropImage: $('#cropImage'),
+    cropBox: $('#cropBox'),
+    cropImageWrap: $('#cropImageWrap'),
+    cropInfo: $('#cropInfo'),
+    cropConfirm: $('#cropConfirm'),
+    cropCancel: $('#cropCancel'),
+    cropReset: $('#cropReset'),
+    cropRatio: document.querySelectorAll('.crop-ratio'),
   };
 
   const uid = () => Math.random().toString(36).slice(2, 9);
@@ -963,17 +1030,24 @@
     return new Blob([result], { type: 'image/png' });
   }
 
-  async function processImage(file, format, quality, pngColors) {
+  async function processImage(file, format, quality, pngColors, crop) {
     const { drawable, width, height, close } = await getDrawable(file);
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, width);
-    canvas.height = Math.max(1, height);
+    let sx = 0, sy = 0, sw = width, sh = height;
+    if (crop && crop.w > 0 && crop.h > 0) {
+      sx = Math.max(0, crop.x);
+      sy = Math.max(0, crop.y);
+      sw = Math.min(width - sx, crop.w);
+      sh = Math.min(height - sy, crop.h);
+    }
+    canvas.width = Math.max(1, sw);
+    canvas.height = Math.max(1, sh);
     const ctx = canvas.getContext('2d');
     if (format === 'image/jpeg') {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    ctx.drawImage(drawable, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(drawable, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     close();
 
     if (format === 'image/png' && pngColors && pngColors <= 256) {
@@ -1051,7 +1125,7 @@
     return `
       <article class="card ${item.status === 'processing' ? 'processing' : ''}" data-id="${item.id}">
         <div class="thumb-wrap compare-wrap">
-          <img src="${item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-orig" />
+          <img src="${item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-orig ${item.crop ? 'crop-dimmed' : ''}" />
           <img src="${item.resultUrl || item.thumbUrl}" alt="" loading="lazy" class="compare-img compare-after ${item.resultUrl ? '' : 'opacity-0'}" />
           <span class="absolute top-2 left-2 r-badge" style="background:rgba(10,10,11,.6);color:#fff;backdrop-filter:blur(6px);">${FORMAT_LABEL[item.originalType] || 'IMG'}</span>
           <span class="compare-label"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>点击放大对比</span>
@@ -1068,6 +1142,9 @@
             </div>
           </div>
           <div class="flex gap-2 mt-4">
+            <button class="btn btn-ghost btn-icon text-xs py-2" data-act="crop" aria-label="裁剪">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+            </button>
             <button class="btn btn-soft flex-1 text-xs py-2" data-act="download" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
               下载
@@ -1130,6 +1207,10 @@
       afterImg.classList.remove('opacity-0');
     } else if (afterImg) {
       afterImg.classList.add('opacity-0');
+    }
+    const origImg = card.querySelector('.compare-orig');
+    if (origImg) {
+      origImg.classList.toggle('crop-dimmed', !!item.crop);
     }
 
     if (item.result) {
@@ -1200,7 +1281,7 @@
       updateCard(item);
       updateSummary();
       try {
-        item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null);
+        item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null, item.crop);
         item.resultUrl = URL.createObjectURL(item.result.blob);
         item.status = 'done';
         item.error = null;
@@ -1294,7 +1375,7 @@
       els.qualityTicks.innerHTML = '<span>32</span><span>128</span><span>256</span>';
       els.qualityRange.min = 32;
       els.qualityRange.max = 256;
-      els.qualityRange.step = 8;
+      els.qualityRange.step = 1;
       els.qualityRange.value = state.pngColors;
       els.qualityValue.textContent = state.pngColors;
       els.pngPresets.forEach((b) => b.classList.toggle('active', parseInt(b.dataset.colors, 10) === state.pngColors));
@@ -1303,7 +1384,7 @@
       els.qualityTicks.innerHTML = '<span>0.1</span><span>0.5</span><span>1.0</span>';
       els.qualityRange.min = 0.1;
       els.qualityRange.max = 1;
-      els.qualityRange.step = 0.05;
+      els.qualityRange.step = 0.01;
       els.qualityRange.value = state.quality;
       els.qualityValue.textContent = state.quality.toFixed(2);
       els.qualityPresets.forEach((b) => b.classList.toggle('active', parseFloat(b.dataset.q) === state.quality));
@@ -1393,6 +1474,228 @@
     document.addEventListener('touchend', onUp);
   }
 
+  let cropState = {
+    item: null,
+    ratio: 'free',
+    box: { x: 0, y: 0, w: 0, h: 0 },
+    imgW: 0,
+    imgH: 0,
+    naturalW: 0,
+    naturalH: 0,
+  };
+
+  function openCropper(itemId) {
+    const item = state.items.find((it) => it.id === itemId);
+    if (!item) return;
+    cropState.item = item;
+    cropState.ratio = 'free';
+    els.cropper.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    els.cropImage.onload = () => {
+      const rect = els.cropImage.getBoundingClientRect();
+      cropState.imgW = rect.width;
+      cropState.imgH = rect.height;
+      cropState.naturalW = els.cropImage.naturalWidth;
+      cropState.naturalH = els.cropImage.naturalHeight;
+      if (item.crop) {
+        const sx = rect.width / els.cropImage.naturalWidth;
+        const sy = rect.height / els.cropImage.naturalHeight;
+        cropState.box = {
+          x: item.crop.x * sx,
+          y: item.crop.y * sy,
+          w: item.crop.w * sx,
+          h: item.crop.h * sy,
+        };
+      } else {
+        cropState.box = {
+          x: rect.width * 0.1,
+          y: rect.height * 0.1,
+          w: rect.width * 0.8,
+          h: rect.height * 0.8,
+        };
+      }
+      applyCropBox();
+      updateCropInfo();
+    };
+    els.cropImage.src = item.thumbUrl;
+    els.cropRatio.forEach((b) => b.classList.toggle('active', b.dataset.ratio === 'free'));
+  }
+
+  function closeCropper() {
+    els.cropper.classList.add('hidden');
+    els.cropImage.src = '';
+    document.body.style.overflow = '';
+    cropState.item = null;
+  }
+
+  function applyCropBox() {
+    const { x, y, w, h } = cropState.box;
+    els.cropBox.style.left = x + 'px';
+    els.cropBox.style.top = y + 'px';
+    els.cropBox.style.width = w + 'px';
+    els.cropBox.style.height = h + 'px';
+  }
+
+  function updateCropInfo() {
+    const sx = cropState.naturalW / cropState.imgW;
+    const sy = cropState.naturalH / cropState.imgH;
+    const rw = Math.round(cropState.box.w * sx);
+    const rh = Math.round(cropState.box.h * sy);
+    els.cropInfo.textContent = `${rw} × ${rh} px`;
+  }
+
+  function clampCropBox() {
+    const { box, imgW, imgH } = cropState;
+    box.x = Math.max(0, Math.min(imgW - box.w, box.x));
+    box.y = Math.max(0, Math.min(imgH - box.h, box.y));
+    box.w = Math.max(20, Math.min(imgW, box.w));
+    box.h = Math.max(20, Math.min(imgH, box.h));
+  }
+
+  function setCropRatio(ratio) {
+    cropState.ratio = ratio;
+    els.cropRatio.forEach((b) => b.classList.toggle('active', b.dataset.ratio === ratio));
+    if (ratio === 'free') return;
+    const [rw, rh] = ratio.split(':').map(Number);
+    const targetRatio = rw / rh;
+    const { box, imgW, imgH } = cropState;
+    let newW = box.w;
+    let newH = box.w / targetRatio;
+    if (newH > imgH) {
+      newH = imgH * 0.8;
+      newW = newH * targetRatio;
+    }
+    if (newW > imgW) {
+      newW = imgW * 0.8;
+      newH = newW / targetRatio;
+    }
+    box.w = newW;
+    box.h = newH;
+    box.x = (imgW - newW) / 2;
+    box.y = (imgH - newH) / 2;
+    clampCropBox();
+    applyCropBox();
+    updateCropInfo();
+  }
+
+  function initCropDrag() {
+    let mode = null;
+    let startX = 0, startY = 0;
+    let startBox = { x: 0, y: 0, w: 0, h: 0 };
+    const minSize = 20;
+
+    const onDown = (e, m) => {
+      mode = m;
+      const evt = e.touches ? e.touches[0] : e;
+      startX = evt.clientX;
+      startY = evt.clientY;
+      startBox = { ...cropState.box };
+      e.preventDefault();
+    };
+
+    const onMove = (e) => {
+      if (!mode) return;
+      const evt = e.touches ? e.touches[0] : e;
+      const dx = evt.clientX - startX;
+      const dy = evt.clientY - startY;
+      const b = { ...startBox };
+      const targetRatio = cropState.ratio === 'free' ? null : (() => {
+        const [rw, rh] = cropState.ratio.split(':').map(Number);
+        return rw / rh;
+      })();
+
+      if (mode === 'move') {
+        b.x += dx;
+        b.y += dy;
+      } else {
+        if (mode.includes('e')) b.w = startBox.w + dx;
+        if (mode.includes('w')) { b.x = startBox.x + dx; b.w = startBox.w - dx; }
+        if (mode.includes('s')) b.h = startBox.h + dy;
+        if (mode.includes('n')) { b.y = startBox.y + dy; b.h = startBox.h - dy; }
+
+        if (targetRatio) {
+          if (mode === 'e' || mode === 'w') {
+            b.h = b.w / targetRatio;
+            if (mode.includes('n')) b.y = startBox.y + startBox.h - b.h;
+          } else if (mode === 's' || mode === 'n') {
+            b.w = b.h * targetRatio;
+            if (mode.includes('w')) b.x = startBox.x + startBox.w - b.w;
+          } else {
+            const tryW = b.w;
+            const tryH = tryW / targetRatio;
+            if (Math.abs(tryH - startBox.h - dy) < Math.abs(dx)) {
+              b.h = tryH;
+              if (mode.includes('n')) b.y = startBox.y + startBox.h - b.h;
+            } else {
+              b.w = b.h * targetRatio;
+              if (mode.includes('w')) b.x = startBox.x + startBox.w - b.w;
+            }
+          }
+        }
+      }
+
+      b.w = Math.max(minSize, Math.min(cropState.imgW, b.w));
+      b.h = Math.max(minSize, Math.min(cropState.imgH, b.h));
+      b.x = Math.max(0, Math.min(cropState.imgW - b.w, b.x));
+      b.y = Math.max(0, Math.min(cropState.imgH - b.h, b.y));
+
+      cropState.box = b;
+      applyCropBox();
+      updateCropInfo();
+    };
+
+    const onUp = () => { mode = null; };
+
+    els.cropBox.addEventListener('mousedown', (e) => {
+      if (e.target.classList.contains('crop-handle')) return;
+      onDown(e, 'move');
+    });
+
+    const handles = [
+      { cls: 'handle-nw', dir: 'nw' }, { cls: 'handle-n', dir: 'n' },
+      { cls: 'handle-ne', dir: 'ne' }, { cls: 'handle-e', dir: 'e' },
+      { cls: 'handle-se', dir: 'se' }, { cls: 'handle-s', dir: 's' },
+      { cls: 'handle-sw', dir: 'sw' }, { cls: 'handle-w', dir: 'w' },
+    ];
+    handles.forEach(({ cls, dir }) => {
+      const el = els.cropBox.querySelector('.' + cls);
+      el.addEventListener('mousedown', (e) => onDown(e, dir));
+      el.addEventListener('touchstart', (e) => onDown(e, dir), { passive: false });
+    });
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onUp);
+  }
+
+  function confirmCrop() {
+    if (!cropState.item) return;
+    const sx = cropState.naturalW / cropState.imgW;
+    const sy = cropState.naturalH / cropState.imgH;
+    cropState.item.crop = {
+      x: Math.round(cropState.box.x * sx),
+      y: Math.round(cropState.box.y * sy),
+      w: Math.round(cropState.box.w * sx),
+      h: Math.round(cropState.box.h * sy),
+    };
+    closeCropper();
+    scheduleReprocess();
+  }
+
+  function resetCrop() {
+    cropState.box = {
+      x: cropState.imgW * 0.1,
+      y: cropState.imgH * 0.1,
+      w: cropState.imgW * 0.8,
+      h: cropState.imgH * 0.8,
+    };
+    setCropRatio('free');
+    clampCropBox();
+    applyCropBox();
+    updateCropInfo();
+  }
+
   function bindEvents() {
     els.dropzone.addEventListener('click', () => els.fileInput.click());
     els.fileInput.addEventListener('change', (e) => {
@@ -1437,6 +1740,7 @@
         if (!item) return;
         if (btn.dataset.act === 'delete') removeItem(item);
         else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+        else if (btn.dataset.act === 'crop') openCropper(item.id);
         return;
       }
       const card = e.target.closest('[data-id]');
@@ -1452,6 +1756,17 @@
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !els.lightbox.classList.contains('hidden')) closeLightbox();
+      if (e.key === 'Escape' && !els.cropper.classList.contains('hidden')) closeCropper();
+    });
+
+    els.cropCancel.addEventListener('click', closeCropper);
+    els.cropConfirm.addEventListener('click', confirmCrop);
+    els.cropReset.addEventListener('click', resetCrop);
+    els.cropper.addEventListener('click', (e) => {
+      if (e.target === els.cropper || e.target === els.cropStage) closeCropper();
+    });
+    els.cropRatio.forEach((btn) => {
+      btn.addEventListener('click', () => setCropRatio(btn.dataset.ratio));
     });
 
     els.clearAll.addEventListener('click', clearAll);
@@ -1500,8 +1815,8 @@
   }
 
   function initTheme() {
-    let saved = 'dark';
-    try { saved = localStorage.getItem('pc-theme') || 'dark'; } catch (e) {}
+    let saved = 'light';
+    try { saved = localStorage.getItem('pc-theme') || 'light'; } catch (e) {}
     if (saved === 'light') {
       document.documentElement.classList.add('light');
       document.documentElement.classList.remove('dark');
@@ -1517,6 +1832,7 @@
     setQuality(state.quality);
     bindEvents();
     initLightboxDrag();
+    initCropDrag();
     renderList();
     updateSummary();
   }
