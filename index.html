@@ -356,6 +356,8 @@
     html { scroll-behavior: auto; }
   }
 </style>
+  <meta name="google-adsense-account" content="ca-pub-4990233882214250">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4990233882214250" crossorigin="anonymous"></script>
 </head>
 
 <body class="min-h-screen antialiased">
@@ -2153,12 +2155,8 @@
 
     var ads = cfg.adsense || {}, pro = cfg.propeller || {};
 
-    // 方案A：Google AdSense —— 先加载官方库再渲染广告单元
+    // 方案A：Google AdSense —— 广告脚本已通过 <head> 中的静态标签加载，渲染各广告单元
     if (ads.publisherId){
-      var s = document.createElement('script');
-      s.async = true; s.crossOrigin = 'anonymous';
-      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ads.publisherId;
-      document.head.appendChild(s);
       renderAdsense($('#ad-banner'), ads.bannerSlot, ads.publisherId, 'horizontal');
       renderAdsense($('#supportAd'), ads.sidebarSlot, ads.publisherId, 'mediumRectangle');
     }
