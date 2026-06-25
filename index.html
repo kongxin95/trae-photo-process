@@ -32,9 +32,9 @@
 -->
 <script>
   window.AD_CONFIG = {
-    show: false,          // 广告总开关：false = 隐藏所有广告位且不加载广告；true = 按下方配置显示
+    show: true,          // 广告总开关：false = 隐藏所有广告位且不加载广告；true = 按下方配置显示
     adsense: {            // 方案A：Google AdSense
-      publisherId: '',    // 发布商 ID，如 'ca-pub-1234567890123456'
+      publisherId: 'ca-pub-4990233882214250',    // 发布商 ID，如 'ca-pub-1234567890123456'
       bannerSlot: '',     // 顶部横幅广告单元 ID（AdSense 后台创建后获得）
       sidebarSlot: '',    // 侧栏广告单元 ID
     },
@@ -293,6 +293,25 @@
   .toggle.on { background: var(--accent); }
   .toggle.on::after { transform: translateX(18px); }
 
+  .exif-sub {
+    appearance: none; -webkit-appearance: none;
+    width: 16px; height: 16px; border-radius: 5px;
+    border: 1.5px solid var(--line-strong);
+    background: var(--surface);
+    cursor: pointer; transition: all .2s ease;
+    position: relative; flex-shrink: 0;
+  }
+  .exif-sub:checked {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .exif-sub:checked::after {
+    content: ''; position: absolute; left: 4px; top: 1px;
+    width: 5px; height: 9px;
+    border: solid #0a0a0b; border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  html.light .exif-sub:checked::after { border-color: #fff; }
+
   .reveal { opacity: 0; }
   .reveal.in { animation: fadeUp .7s cubic-bezier(.22,1,.36,1) both; }
 
@@ -323,6 +342,13 @@
     background-image:
       linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
     background-size: 12px 12px; opacity: .5;
+  }
+
+  .appreciate-tab { color: var(--faint); }
+  .appreciate-tab.active {
+    background: var(--panel);
+    color: var(--accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -445,62 +471,60 @@
   </header>
 
   <main id="top" class="relative z-10">
-    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-6 sm:pt-8 pb-0">
-      <div class="grid md:grid-cols-[1.2fr_1fr] gap-6 lg:gap-10 items-center">
-        <div class="text-center md:text-left max-w-2xl mx-auto md:mx-0 order-2 md:order-1">
-          <span class="chip mb-3 text-xs py-1"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span> 裁剪 · 压缩 · 格式转换</span>
-          <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.5rem,4.5vw,2.75rem)] leading-[1.05]">
-            在浏览器里，优雅地<span class="grad-text">重塑</span>每一张图片
-          </h1>
-          <p class="mt-2.5 text-muted text-sm sm:text-base leading-relaxed max-w-xl md:max-w-none mx-auto md:mx-0">
-            压缩、裁剪、格式转换、批量打包 —— 全部在浏览器本地完成，图片不离开设备，隐私由你掌控。
-          </p>
-          <div class="mt-4 flex flex-wrap items-center justify-center md:justify-start gap-2.5">
-            <a href="#workspace" class="btn btn-primary px-5 py-2.5 text-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
-              开始处理图片
-            </a>
-            <a href="#features" class="btn btn-ghost px-5 py-2.5 text-sm">了解特性</a>
-          </div>
-          <div class="mt-3.5 flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-1.5 text-[11px] text-faint font-mono">
-            <span>JPG · PNG · WebP · BMP</span><span>·</span>
-            <span>Canvas API 本地编码</span><span>·</span>
-            <span>ZIP 批量下载</span>
-          </div>
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-8 sm:pt-12 pb-0">
+      <div class="text-center max-w-2xl mx-auto">
+        <h1 class="font-display font-extrabold tracking-tight text-[clamp(1.8rem,6vw,3.5rem)] leading-[1.1]">
+          <span class="block">裁剪 · 压缩 · 格式转换</span>
+          <span class="block mt-1.5"><span class="grad-text">隐私抹除</span>，全在本地</span>
+        </h1>
+        <p class="mt-4 text-muted text-base sm:text-lg leading-relaxed">
+          纯前端处理，图片不上传服务器。自动去除 GPS 、时间、相机型号等隐私数据。
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <a href="#workspace" class="btn btn-primary px-7 py-3 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5"/><path d="M5 20h14"/></svg>
+            开始使用
+          </a>
         </div>
-        <div class="relative flex items-center justify-center order-1 md:order-2">
-          <div class="relative w-full max-w-[220px] sm:max-w-[260px] md:max-w-[300px] aspect-square">
-            <div class="absolute -inset-6 rounded-full opacity-50 blur-3xl" style="background:radial-gradient(circle, var(--grape) 0%, var(--accent) 50%, transparent 70%);"></div>
-            <div class="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
-              <img id="heroGifLight" src="gif/ims1.gif" alt="动态展示" class="w-full h-full object-cover block" />
-              <img id="heroGifDark" src="gif/ims2.gif" alt="" class="w-full h-full object-cover block hidden" />
-            </div>
-            <div class="absolute -top-2.5 -right-2.5 glass rounded-xl px-2.5 py-1.5 text-[11px] font-semibold shadow-lg whitespace-nowrap z-10" style="background:linear-gradient(135deg,var(--accent),var(--grape));color:#0a0a0b;">
-              ⚡ 实时预览
-            </div>
-            <div class="absolute -bottom-2.5 -left-2.5 glass rounded-xl px-2.5 py-1.5 text-[11px] font-medium shadow-lg whitespace-nowrap z-10">
-              <span class="text-accent">●</span> 本地处理
-            </div>
-          </div>
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-faint font-mono">
+          <span>JPG · PNG · WebP · BMP</span><span>·</span>
+          <span>ZIP 批量导出</span>
         </div>
       </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-1 pb-0">
-      <div id="ad-banner" class="ad-slot h-[90px] flex items-center justify-center">
-        <div class="ad-placeholder text-center">
-          <p class="font-display font-semibold text-sm text-fg">你的广告位 · 728 × 90</p>
-          <p class="text-[11px] text-faint mt-0.5 font-mono">替换此占位为联盟广告代码即可变现</p>
-        </div>
-      </div>
+    <section class="max-w-7xl mx-auto px-5 sm:px-8 pt-5 pb-0">
+      <div id="ad-banner" class="ad-slot h-[90px] flex items-center justify-center"></div>
     </section>
 
     <section id="workspace" class="max-w-7xl mx-auto px-5 sm:px-8 pt-6 pb-10">
-      <div class="flex items-end justify-between mb-6">
+      <div class="flex items-end justify-between mb-5">
         <div>
           <h2 class="font-display text-2xl sm:text-3xl font-bold tracking-tight">工作台</h2>
-          <p class="text-muted text-sm mt-1.5">拖入图片，裁剪、压缩、转换格式，一键导出。</p>
+          <p class="text-muted text-sm mt-1.5">拖入图片，裁剪、压缩、格式转换、一键抹除隐私，本地搞定。</p>
         </div>
+      </div>
+
+      <div id="quickCrop" class="mb-5">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm font-semibold text-muted font-display shrink-0">快捷裁剪</span>
+          <button class="quick-crop-btn chip py-2 px-3" data-ratio="3:4" data-label="小红书 3:4">
+            <span class="w-3.5 h-5 inline-block rounded-sm mr-1.5 align-middle" style="background:var(--accent);opacity:.85;"></span>小红书
+          </button>
+          <button class="quick-crop-btn chip py-2 px-3" data-ratio="2.35:1" data-label="公众号封面 2.35:1">
+            <span class="w-6 h-2.5 inline-block rounded-sm mr-1.5 align-middle" style="background:var(--accent);opacity:.85;"></span>公众号封面
+          </button>
+          <button class="quick-crop-btn chip py-2 px-3" data-ratio="9:16" data-label="手机壁纸 9:16">
+            <span class="w-2 h-5 inline-block rounded-sm mr-1.5 align-middle" style="background:var(--accent);opacity:.85;"></span>手机壁纸
+          </button>
+          <button class="quick-crop-btn chip py-2 px-3" data-ratio="4:3" data-label="朋友圈 4:3">
+            <span class="w-5 h-4 inline-block rounded-sm mr-1.5 align-middle" style="background:var(--accent);opacity:.85;"></span>朋友圈
+          </button>
+          <button class="quick-crop-btn chip py-2 px-3" data-ratio="16:9" data-label="横版视频 16:9">
+            <span class="w-7 h-3.5 inline-block rounded-sm mr-1.5 align-middle" style="background:var(--accent);opacity:.85;"></span>横版视频
+          </button>
+        </div>
+        <p id="quickCropHint" class="text-xs text-faint mt-2 hidden">已有图片，点击上方按钮可一键设置裁剪比例并打开裁剪器</p>
       </div>
 
       <div id="dropzone" class="dropzone rounded-3xl p-8 sm:p-12 text-center cursor-pointer glass">
@@ -573,9 +597,37 @@
           <div class="flex items-center justify-between py-2">
             <div>
               <p class="text-sm font-medium">保留原文件名</p>
-              <p class="text-[11px] text-faint mt-0.5">关闭则附加质量标记</p>
+              <p class="text-xs text-faint mt-0.5">关闭则附加质量标记</p>
             </div>
             <div id="keepNameToggle" class="toggle on" role="switch" aria-checked="true"></div>
+          </div>
+
+          <div class="py-2 border-t mt-2" style="border-color:var(--line)">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium">一键抹除隐私</p>
+                <p class="text-xs text-faint mt-0.5">去除图片 EXIF 元数据</p>
+              </div>
+              <div id="exifToggle" class="toggle on" role="switch" aria-checked="true"></div>
+            </div>
+            <div id="exifOptions" class="mt-3 space-y-2 pl-1">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" id="exifGps" class="exif-sub" checked />
+                <span class="text-xs text-muted">GPS 定位信息</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" id="exifTime" class="exif-sub" checked />
+                <span class="text-xs text-muted">拍摄时间</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" id="exifCamera" class="exif-sub" checked />
+                <span class="text-xs text-muted">相机型号 / 设备</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" id="exifOther" class="exif-sub" checked />
+                <span class="text-xs text-muted">其他 EXIF 参数</span>
+              </label>
+            </div>
           </div>
         </aside>
 
@@ -604,64 +656,90 @@
         <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">为什么选择 PixelCraft</h2>
         <p class="text-muted mt-3">专为隐私与效率而生的极简图片工具。</p>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          <h3 class="font-display font-semibold mb-1.5">隐私优先</h3>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <h3 class="font-display font-semibold text-base">隐私优先</h3>
+          </div>
           <p class="text-sm text-muted leading-relaxed">图片全程在本地处理，永不上传服务器，从根上杜绝泄露。</p>
         </div>
-        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-          <h3 class="font-display font-semibold mb-1.5">极速响应</h3>
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h3 class="font-display font-semibold text-base">极速响应</h3>
+          </div>
           <p class="text-sm text-muted leading-relaxed">Canvas API 本地编码，滑动质量即刻预览体积，无需等待网络。</p>
         </div>
-        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5z"/><path d="M9 12h6M9 8h6"/></svg></div>
-          <h3 class="font-display font-semibold mb-1.5">批量打包</h3>
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5z"/><path d="M9 12h6M9 8h6"/></svg></div>
+            <h3 class="font-display font-semibold text-base">批量打包</h3>
+          </div>
           <p class="text-sm text-muted leading-relaxed">多图同传，一键 ZIP 打包或逐张下载，工作流丝滑顺畅。</p>
         </div>
-        <div class="glass rounded-3xl p-6 hover:-translate-y-1 transition-transform">
-          <div class="w-11 h-11 rounded-xl glass flex items-center justify-center mb-4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>
-          <h3 class="font-display font-semibold mb-1.5">格式自由</h3>
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h4"/></svg></div>
+            <h3 class="font-display font-semibold text-base">EXIF 隐私</h3>
+          </div>
+          <p class="text-sm text-muted leading-relaxed">一键抹除 GPS 定位、拍摄时间、相机型号等隐私元数据，安全分享。</p>
+        </div>
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>
+            <h3 class="font-display font-semibold text-base">格式自由</h3>
+          </div>
           <p class="text-sm text-muted leading-relaxed">JPG / PNG / WebP 互转，裁剪尺寸，压缩质量从 0.1 到 1.0 精细可控。</p>
+        </div>
+        <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+            <h3 class="font-display font-semibold text-base">平台适配</h3>
+          </div>
+          <p class="text-sm text-muted leading-relaxed">小红书、公众号、手机壁纸等主流平台尺寸，一键裁剪无需手动调整。</p>
         </div>
       </div>
     </section>
 
-    <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-10">
-      <div id="supportGrid" class="grid gap-5">
-        <div id="ad-sidebar" class="ad-slot h-[260px] flex items-center justify-center p-8 hidden">
-          <div class="ad-placeholder text-center">
-            <p class="font-display font-semibold text-lg text-fg">侧栏广告位 · 300 × 250</p>
-            <p class="text-xs text-faint mt-2 font-mono">可在变现高峰期置换为高收益素材</p>
+    <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
+      <div class="text-center max-w-xl mx-auto mb-12">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">支持 PixelCraft</h2>
+        <p class="text-muted mt-3">如果这个工具帮到了你，欢迎扫码支持，让开发更有动力。</p>
+      </div>
+      <div class="flex flex-col lg:flex-row items-start justify-center gap-6 lg:gap-8">
+        <!-- 广告位 -->
+        <div id="supportAd" class="ad-slot hidden lg:flex items-center justify-center w-full lg:w-auto shrink-0">
+          <div class="w-full max-w-[300px] lg:w-[300px] h-[250px] lg:h-[560px] flex items-center justify-center rounded-2xl" style="background:var(--panel);border:1px dashed var(--line-strong);">
+            <div class="text-center">
+              <p class="font-display font-semibold text-sm text-fg">广告位 · 300×600</p>
+              <p class="text-[11px] text-faint mt-1 font-mono">变现区域</p>
+            </div>
           </div>
         </div>
-        <div class="glass rounded-3xl p-6 sm:p-8">
-          <div class="flex flex-col items-center justify-center w-full">
-            <div class="relative mb-6">
-              <div class="absolute -inset-3 rounded-full opacity-50 blur-xl" style="background:radial-gradient(circle, var(--accent) 0%, transparent 70%);"></div>
-              <div class="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border-4 shadow-2xl" style="border-color:var(--panel);">
-                <img src="gif/ims3.gif" alt="" class="w-full h-full object-cover" />
+        <!-- 赞赏码卡片 -->
+        <div class="flex-1 mx-auto lg:mx-0">
+          <div class="glass rounded-3xl p-8 sm:p-10">
+            <div class="flex flex-col items-center gap-6">
+              <div class="flex flex-col sm:flex-row items-center gap-6 w-full justify-center">
+                <div class="flex flex-col items-center gap-2.5 flex-1 w-full max-w-[280px] sm:max-w-[300px]">
+                  <div class="w-full aspect-square rounded-2xl overflow-hidden border" style="border-color:var(--line);">
+                    <img src="png/wechat.png" alt="微信赞赏码" class="w-full h-full object-contain p-2" />
+                  </div>
+                  <span class="text-sm text-faint">微信</span>
+                </div>
+                <div class="flex flex-col items-center gap-2.5 flex-1 w-full max-w-[280px] sm:max-w-[300px]">
+                  <div class="w-full aspect-square rounded-2xl overflow-hidden border" style="border-color:var(--line);">
+                    <img src="png/alipay.png" alt="支付宝收款码" class="w-full h-full object-contain p-2" />
+                  </div>
+                  <span class="text-sm text-faint">支付宝</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-center gap-2 text-sm text-muted mt-1">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span>感谢每一位支持者 ☕</span>
               </div>
             </div>
-            <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-8 sm:gap-10 w-full">
-              <div class="flex flex-col items-center gap-3">
-                <div class="qr-box w-[min(100%,28rem)] sm:w-[30rem] lg:w-[32rem] overflow-hidden">
-                  <img src="png/wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-3" />
-                </div>
-                <span class="text-[2rem] font-medium text-muted">微信赞赏</span>
-              </div>
-              <div class="flex flex-col items-center gap-3">
-                <div class="qr-box w-[min(100%,28rem)] sm:w-[30rem] lg:w-[32rem] overflow-hidden">
-                  <img src="png/alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-3" />
-                </div>
-                <span class="text-[2rem] font-medium text-muted">支付宝</span>
-              </div>
-            </div>
-          </div>
-          <div class="text-center mt-6">
-            <h3 class="font-display font-semibold text-xl">请作者喝杯咖啡 ☕</h3>
-            <p class="text-muted text-sm mt-1.5">如果工具帮到了你，欢迎扫码支持持续迭代。</p>
           </div>
         </div>
       </div>
@@ -742,10 +820,47 @@
     </div>
   </div>
 
-  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[90] opacity-0 pointer-events-none transition-all duration-300">
-    <div class="glass-strong rounded-xl px-4 py-2.5 text-sm font-medium shadow-xl flex items-center gap-2">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <div id="toast" class="fixed top-[220px] left-1/2 -translate-x-1/2 z-[90] opacity-0 pointer-events-none transition-all duration-300">
+    <div class="glass-strong rounded-2xl px-5 py-3 text-sm font-medium shadow-2xl flex items-center gap-2.5">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
       <span id="toastMsg">已完成</span>
+    </div>
+  </div>
+
+  <div id="appreciateModal" class="hidden fixed inset-0 z-[96] flex items-end sm:items-center justify-center p-4" style="background:rgba(0,0,0,.55);backdrop-filter:blur(8px);">
+    <div class="glass-strong rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden" style="animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both;">
+      <div class="px-6 pt-6 pb-4 text-center">
+        <div class="mx-auto w-12 h-12 rounded-2xl mb-3 flex items-center justify-center" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <p id="appreciateMsg" class="font-display font-bold text-xl leading-snug">压缩成功！</p>
+        <p id="appreciateSavings" class="text-base text-muted mt-2"></p>
+      </div>
+      <div class="px-4 pb-4">
+        <div class="flex gap-1.5 mb-3 bg-white/[.06] rounded-2xl p-1">
+          <button id="apTabWechat" class="appreciate-tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all">微信</button>
+          <button id="apTabAlipay" class="appreciate-tab flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all">支付宝</button>
+        </div>
+        <div class="rounded-2xl overflow-hidden border" style="border-color:var(--line);">
+          <div id="apPanelWechat" class="appreciate-panel">
+            <div class="aspect-square flex items-center justify-center" style="background:var(--panel);">
+              <div class="qr-box relative z-10 w-full h-full m-3 !rounded-2xl overflow-hidden">
+                <img src="png/wechat.png" alt="微信赞赏码" class="relative z-10 w-full h-full object-contain p-2" />
+              </div>
+            </div>
+            <p class="text-center text-sm text-faint py-3" style="background:var(--panel);">微信 · 扫码赞赏</p>
+          </div>
+          <div id="apPanelAlipay" class="appreciate-panel hidden">
+            <div class="aspect-square flex items-center justify-center" style="background:var(--panel);">
+              <div class="qr-box relative z-10 w-full h-full m-3 !rounded-2xl overflow-hidden">
+                <img src="png/alipay.png" alt="支付宝收款码" class="relative z-10 w-full h-full object-contain p-2" />
+              </div>
+            </div>
+            <p class="text-center text-sm text-faint py-3" style="background:var(--panel);">支付宝 · 扫码赞赏</p>
+          </div>
+        </div>
+        <button id="appreciateClose" class="w-full mt-3 py-2.5 rounded-xl text-sm font-medium transition-colors" style="background:var(--surface);border:1px solid var(--line);">下次再说</button>
+      </div>
     </div>
   </div>
 
@@ -764,8 +879,14 @@
     quality: 1,
     pngColors: 256,
     keepName: true,
+    exifStrip: true,
+    exifGps: true,
+    exifTime: true,
+    exifCamera: true,
+    exifOther: true,
     reprocessTimer: null,
     processing: false,
+    quickCropRatio: null,
   };
 
   const els = {
@@ -785,6 +906,14 @@
     qualityPresets: $$('#qualityPresets [data-q]'),
     pngPresets: $$('#pngPresets [data-colors]'),
     keepNameToggle: $('#keepNameToggle'),
+    exifToggle: $('#exifToggle'),
+    exifOptions: $('#exifOptions'),
+    exifGps: $('#exifGps'),
+    exifTime: $('#exifTime'),
+    exifCamera: $('#exifCamera'),
+    exifOther: $('#exifOther'),
+    quickCrop: $('#quickCrop'),
+    quickCropHint: $('#quickCropHint'),
     sumOrig: $('#sumOrig'),
     sumOut: $('#sumOut'),
     sumSave: $('#sumSave'),
@@ -810,8 +939,14 @@
     toast: $('#toast'),
     toastMsg: $('#toastMsg'),
     year: $('#year'),
-    heroGifLight: $('#heroGifLight'),
-    heroGifDark: $('#heroGifDark'),
+    appreciateModal: $('#appreciateModal'),
+    appreciateMsg: $('#appreciateMsg'),
+    appreciateSavings: $('#appreciateSavings'),
+    apTabWechat: $('#apTabWechat'),
+    apTabAlipay: $('#apTabAlipay'),
+    apPanelWechat: $('#apPanelWechat'),
+    apPanelAlipay: $('#apPanelAlipay'),
+    appreciateClose: $('#appreciateClose'),
     cropper: $('#cropper'),
     cropImage: $('#cropImage'),
     cropBox: $('#cropBox'),
@@ -832,6 +967,24 @@
     if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
     return (b / 1048576).toFixed(2) + ' MB';
   }
+
+  function showAppreciate(count) {
+    const orig = state.items.reduce((s, i) => s + i.originalSize, 0);
+    const out = state.items.reduce((s, i) => s + (i.result ? i.result.size : 0), 0);
+    const saved = orig - out;
+    els.appreciateMsg.textContent = `🎉 已成功导出 ${count} 张图片`;
+    els.appreciateSavings.textContent = saved > 0 ? `节省 ${fmtBytes(saved)} 空间，如果帮到了您，请作者喝杯咖啡吧 ☕` : '感谢使用，欢迎再来 ☕';
+    els.appreciateModal.classList.remove('hidden');
+    els.apTabWechat.classList.add('active');
+    els.apTabAlipay.classList.remove('active');
+    els.apPanelWechat.classList.remove('hidden');
+    els.apPanelAlipay.classList.add('hidden');
+  }
+
+  function hideAppreciate() {
+    els.appreciateModal.classList.add('hidden');
+  }
+
   function baseName(name) {
     const i = name.lastIndexOf('.');
     return i > 0 ? name.slice(0, i) : name;
@@ -1215,11 +1368,14 @@
       els.grid.innerHTML = '';
       els.emptyState.classList.remove('hidden');
       els.listSection.classList.add('hidden');
+      els.quickCropHint.classList.add('hidden');
+      document.querySelectorAll('.quick-crop-btn').forEach((b) => b.classList.remove('active'));
       toggleBulkBar(false);
       return;
     }
     els.emptyState.classList.add('hidden');
     els.listSection.classList.remove('hidden');
+    els.quickCropHint.classList.remove('hidden');
     els.grid.innerHTML = state.items.map(cardHTML).join('');
     els.itemCount.textContent = state.items.length;
     state.items.forEach((item) => updateCard(item));
@@ -1378,6 +1534,7 @@
       const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
       downloadBlob(blob, `pixelcraft-${Date.now()}.zip`);
       showToast(`已打包 ${ready.length} 张图片`);
+      showAppreciate(ready.length);
     } catch (e) {
       showToast('打包失败：' + (e.message || e));
     } finally {
@@ -1401,6 +1558,7 @@
     }
     els.downloadAll.disabled = false;
     showToast(`已开始下载 ${ready.length} 张图片`);
+    showAppreciate(ready.length);
   }
 
   function setSliderFill() {
@@ -1783,6 +1941,58 @@
       els.keepNameToggle.setAttribute('aria-checked', state.keepName);
     });
 
+    els.exifToggle.addEventListener('click', () => {
+      state.exifStrip = !state.exifStrip;
+      els.exifToggle.classList.toggle('on', state.exifStrip);
+      els.exifToggle.setAttribute('aria-checked', state.exifStrip);
+      els.exifOptions.style.opacity = state.exifStrip ? '1' : '.45';
+      els.exifOptions.style.pointerEvents = state.exifStrip ? 'auto' : 'none';
+    });
+
+    ['exifGps', 'exifTime', 'exifCamera', 'exifOther'].forEach((key) => {
+      els[key].addEventListener('change', () => {
+        state[key] = els[key].checked;
+        const anyChecked = state.exifGps || state.exifTime || state.exifCamera || state.exifOther;
+        state.exifStrip = anyChecked;
+        els.exifToggle.classList.toggle('on', state.exifStrip);
+        els.exifToggle.setAttribute('aria-checked', state.exifStrip);
+      });
+    });
+
+    document.querySelectorAll('.quick-crop-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const ratio = btn.dataset.ratio;
+        const label = btn.dataset.label;
+        state.quickCropRatio = ratio;
+        document.querySelectorAll('.quick-crop-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (state.items.length === 0) {
+          showToast(`请先上传图片，再使用「${label}」裁剪`);
+          return;
+        }
+        const firstItem = state.items[0];
+        openCropper(firstItem.id);
+        setTimeout(() => setCropRatio(ratio), 50);
+      });
+    });
+
+    els.apTabWechat.addEventListener('click', () => {
+      els.apTabWechat.classList.add('active');
+      els.apTabAlipay.classList.remove('active');
+      els.apPanelWechat.classList.remove('hidden');
+      els.apPanelAlipay.classList.add('hidden');
+    });
+    els.apTabAlipay.addEventListener('click', () => {
+      els.apTabAlipay.classList.add('active');
+      els.apTabWechat.classList.remove('active');
+      els.apPanelAlipay.classList.remove('hidden');
+      els.apPanelWechat.classList.add('hidden');
+    });
+    els.appreciateClose.addEventListener('click', hideAppreciate);
+    els.appreciateModal.addEventListener('click', (e) => {
+      if (e.target === els.appreciateModal) hideAppreciate();
+    });
+
     els.grid.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-act]');
       if (btn) {
@@ -1791,7 +2001,7 @@
         const item = state.items.find((i) => i.id === id);
         if (!item) return;
         if (btn.dataset.act === 'delete') removeItem(item);
-        else if (btn.dataset.act === 'download' && item.result) downloadBlob(item.result.blob, makeName(item));
+        else if (btn.dataset.act === 'download' && item.result) { downloadBlob(item.result.blob, makeName(item)); showAppreciate(1); }
         else if (btn.dataset.act === 'crop') openCropper(item.id);
         return;
       }
@@ -1852,8 +2062,6 @@
       document.documentElement.classList.toggle('dark', !isLight);
       els.iconMoon.classList.toggle('hidden', isLight);
       els.iconSun.classList.toggle('hidden', !isLight);
-      if (els.heroGifLight) els.heroGifLight.classList.toggle('hidden', !isLight);
-      if (els.heroGifDark) els.heroGifDark.classList.toggle('hidden', isLight);
       try { localStorage.setItem('pc-theme', isLight ? 'light' : 'dark'); } catch (e) {}
     });
 
@@ -1878,8 +2086,6 @@
       els.iconMoon.classList.add('hidden');
       els.iconSun.classList.remove('hidden');
     }
-    if (els.heroGifLight) els.heroGifLight.classList.toggle('hidden', !isLight);
-    if (els.heroGifDark) els.heroGifDark.classList.toggle('hidden', isLight);
   }
 
   function init() {
@@ -1904,15 +2110,14 @@
 
     // 总开关关闭时：隐藏所有广告位且不加载任何广告脚本
     if (cfg.show === false) {
-      var b = $('#ad-banner'), sb = $('#ad-sidebar');
+      var b = $('#ad-banner'), sa = $('#supportAd');
       if (b) { var sec = b.closest('section'); if (sec) sec.classList.add('hidden'); }
-      if (sb) sb.classList.add('hidden');
+      if (sa) { var p = sa.closest('.ad-slot'); if (p) p.classList.add('hidden'); }
       return;
     }
-    // 开启时：恢复侧栏广告位显示与双栏布局
-    var sbShow = $('#ad-sidebar'), grid = $('#supportGrid');
-    if (sbShow) sbShow.classList.remove('hidden');
-    if (grid) { grid.classList.add('lg:grid-cols-[1.4fr_1fr]'); grid.classList.remove('grid-cols-1'); }
+    // 开启时：确保支持区广告位显示
+    var saShow = $('#supportAd');
+    if (saShow) { var p = saShow.closest('.ad-slot'); if (p) p.classList.remove('hidden'); }
 
     // 动态注入第三方广告代码，确保其中 <script> 标签会执行
     function injectHTML(el, code){
@@ -1955,12 +2160,12 @@
       s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ads.publisherId;
       document.head.appendChild(s);
       renderAdsense($('#ad-banner'), ads.bannerSlot, ads.publisherId, 'horizontal');
-      renderAdsense($('#ad-sidebar'), ads.sidebarSlot, ads.publisherId, 'rectangle');
+      renderAdsense($('#supportAd'), ads.sidebarSlot, ads.publisherId, 'mediumRectangle');
     }
 
     // 方案B：PropellerAds / Monetag —— 仅填充 AdSense 未占用的位置（互补填充）
     if (pro.bannerCode && !ads.bannerSlot) injectHTML($('#ad-banner'), pro.bannerCode);
-    if (pro.sidebarCode && !ads.sidebarSlot) injectHTML($('#ad-sidebar'), pro.sidebarCode);
+    if (pro.sidebarCode && !ads.sidebarSlot) injectHTML($('#supportAd'), pro.sidebarCode);
   })();
 </script>
 </body>
