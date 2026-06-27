@@ -356,8 +356,6 @@
     html { scroll-behavior: auto; }
   }
 </style>
-  <meta name="google-adsense-account" content="ca-pub-4990233882214250">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4990233882214250" crossorigin="anonymous"></script>
 </head>
 
 <body class="min-h-screen antialiased">
@@ -457,6 +455,9 @@
       <nav class="hidden md:flex items-center gap-1">
         <a href="#workspace" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">工具</a>
         <a href="#features" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">特性</a>
+        <a href="#guide" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">指南</a>
+        <a href="#scenarios" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">场景</a>
+        <a href="#faq" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">常见问题</a>
         <a href="#support" class="px-3.5 py-2 text-sm text-muted hover:text-fg transition-colors rounded-lg">赞赏</a>
       </nav>
       <div class="flex items-center gap-2">
@@ -704,6 +705,167 @@
       </div>
     </section>
 
+    <section id="guide" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 border-t" style="border-color:var(--line)">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">使用指南</h2>
+        <p class="text-muted mt-3">从入门到精通，三分钟掌握 PixelCraft 的全部功能</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="glass rounded-3xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style="background:var(--accent);color:#06140c;">1</div>
+            <h3 class="font-display font-semibold text-lg">上传图片</h3>
+          </div>
+          <div class="space-y-3 text-sm text-muted leading-relaxed">
+            <p>有三种方式可以将图片导入 PixelCraft：</p>
+            <ul class="space-y-2 pl-4" style="list-style:disc">
+              <li><strong class="text-fg">拖拽上传</strong>：将图片文件直接拖到页面中央的上传区域，支持一次拖入多张。</li>
+              <li><strong class="text-fg">点击选择</strong>：点击上传区域，在弹出的文件选择器中选取图片，按住 Ctrl/Cmd 可多选。</li>
+              <li><strong class="text-fg">粘贴图片</strong>：复制图片后，在页面上按 Ctrl+V / Cmd+V 即可直接粘贴。</li>
+            </ul>
+            <p>支持 JPG、PNG、WebP、BMP 四种常见格式，单张最大支持 50MB，批量上传数量无限制。</p>
+          </div>
+        </div>
+        <div class="glass rounded-3xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style="background:var(--accent);color:#06140c;">2</div>
+            <h3 class="font-display font-semibold text-lg">调整压缩质量</h3>
+          </div>
+          <div class="space-y-3 text-sm text-muted leading-relaxed">
+            <p>在左侧「处理设置」面板中，可以精细控制输出效果：</p>
+            <ul class="space-y-2 pl-4" style="list-style:disc">
+              <li><strong class="text-fg">输出格式</strong>：选择 JPG、PNG 或 WebP。JPG 适合照片，PNG 适合截图图标，WebP 兼顾体积与质量。</li>
+              <li><strong class="text-fg">压缩质量</strong>：拖动滑块从 0.1 到 1.0，数值越低体积越小、质量越低。推荐 JPG 使用 0.7-0.85。</li>
+              <li><strong class="text-fg">PNG 颜色数</strong>：输出 PNG 时可通过减少颜色数进一步压缩，256 色通常肉眼难辨差异。</li>
+            </ul>
+            <p>调整参数后，预估体积会实时更新，帮助你在质量和体积之间找到最佳平衡点。</p>
+          </div>
+        </div>
+        <div class="glass rounded-3xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style="background:var(--accent);color:#06140c;">3</div>
+            <h3 class="font-display font-semibold text-lg">裁剪图片</h3>
+          </div>
+          <div class="space-y-3 text-sm text-muted leading-relaxed">
+            <p>PixelCraft 提供了灵活的裁剪功能，满足各种场景需求：</p>
+            <ul class="space-y-2 pl-4" style="list-style:disc">
+              <li><strong class="text-fg">自由裁剪</strong>：鼠标拖动裁剪框边缘和角落，自由调整裁剪区域大小和位置。</li>
+              <li><strong class="text-fg">固定比例</strong>：选择 1:1、4:3、16:9 等常用比例，裁剪框会按比例缩放。</li>
+              <li><strong class="text-fg">快捷裁剪</strong>：预设小红书 3:4、公众号封面 2.35:1、手机壁纸 9:16 等平台尺寸，一键应用。</li>
+            </ul>
+            <p>裁剪器支持滚轮缩放查看细节，确认后裁剪结果立即应用到输出预览。</p>
+          </div>
+        </div>
+        <div class="glass rounded-3xl p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-lg font-bold" style="background:var(--accent);color:#06140c;">4</div>
+            <h3 class="font-display font-semibold text-lg">下载与批量导出</h3>
+          </div>
+          <div class="space-y-3 text-sm text-muted leading-relaxed">
+            <p>处理完成后，有多种导出方式供选择：</p>
+            <ul class="space-y-2 pl-4" style="list-style:disc">
+              <li><strong class="text-fg">单张下载</strong>：鼠标悬停在图片卡片上，点击下载按钮即可保存单张图片。</li>
+              <li><strong class="text-fg">逐张下载</strong>：点击底部批量栏的「逐张下载」，浏览器会依次下载所有处理后的图片。</li>
+              <li><strong class="text-fg">打包 ZIP</strong>：点击「打包 ZIP」将所有图片压缩为一个 ZIP 文件下载，方便整理和传输。</li>
+            </ul>
+            <p>默认保留原文件名，关闭「保留原文件名」开关后，文件名会附加质量参数标识，便于区分不同版本。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scenarios" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 border-t" style="border-color:var(--line)">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">应用场景</h2>
+        <p class="text-muted mt-3">无论你是内容创作者、开发者还是普通用户，PixelCraft 都能帮你提升效率</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">社交媒体运营</h3>
+          <p class="text-sm text-muted leading-relaxed">小红书封面、公众号头图、朋友圈配图，一键裁剪到合适尺寸。批量压缩后上传速度更快，节省流量和加载时间。</p>
+        </div>
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">博客与网站</h3>
+          <p class="text-sm text-muted leading-relaxed">文章插图统一压缩到合适体积，提升页面加载速度。WebP 格式大幅减少带宽消耗，SEO 排名更靠前。</p>
+        </div>
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">聊天与邮件</h3>
+          <p class="text-sm text-muted leading-relaxed">发送照片前先压缩，避免对方等待加载。一键抹除 EXIF 隐私信息，不用担心泄露拍摄地点和时间。</p>
+        </div>
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">电商平台</h3>
+          <p class="text-sm text-muted leading-relaxed">商品图片批量压缩到平台要求的尺寸和大小。保持画质的同时缩小体积，让店铺加载更快、转化率更高。</p>
+        </div>
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">文档与报告</h3>
+          <p class="text-sm text-muted leading-relaxed">PPT、Word、PDF 中的插图压缩后文件体积大幅减小，发送更快、存储更省。批量处理效率翻倍。</p>
+        </div>
+        <div class="glass rounded-2xl p-6 hover:-translate-y-1 transition-transform">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4" style="background:linear-gradient(135deg,var(--accent),var(--grape));">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="font-display font-semibold text-lg mb-2">隐私敏感场景</h3>
+          <p class="text-sm text-muted leading-relaxed">处理涉及隐私的照片时，本地处理绝不泄露。律师、医生、记者等对数据安全有高要求的职业同样适用。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="max-w-7xl mx-auto px-5 sm:px-8 py-20 border-t" style="border-color:var(--line)">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">常见问题</h2>
+        <p class="text-muted mt-3">你可能想知道的问题，这里都有答案</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">图片真的不会上传吗？</h3>
+          <p class="text-sm text-muted leading-relaxed">是的，100% 本地处理。PixelCraft 是纯前端工具，所有裁剪、压缩、格式转换都通过浏览器的 Canvas API 在你自己的电脑上完成，没有后端服务器，也不会发起任何网络请求传输图片数据。你可以断开网络使用，功能完全不受影响。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">EXIF 是什么？为什么要抹除？</h3>
+          <p class="text-sm text-muted leading-relaxed">EXIF 是图片中嵌入的元数据，可能包含拍摄时间、GPS 定位、相机型号、设备信息等。分享照片时如果不抹除 EXIF，可能泄露你的位置和隐私。PixelCraft 的「一键抹除隐私」功能会在导出时自动清除这些敏感数据，让分享更安心。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">JPG、PNG、WebP 怎么选？</h3>
+          <p class="text-sm text-muted leading-relaxed">JPG 适合照片、风景等人眼不易察觉损耗的图片，压缩率高；PNG 适合截图、图标、文字类图片，支持透明背景，无损压缩；WebP 是新一代格式，兼顾 JPG 的高压缩率和 PNG 的透明支持，同质量下体积比 JPG 小 25-35%，但兼容性略低。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">批量处理有限制吗？</h3>
+          <p class="text-sm text-muted leading-relaxed">理论上没有数量限制。但受浏览器内存限制，建议单次处理不超过 500 张，单张图片不超过 50MB。如果处理大量超大图片，可能会占用较多内存，可以分批处理。处理过程中关闭其他标签页可以提升性能。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">压缩后图片会变模糊吗？</h3>
+          <p class="text-sm text-muted leading-relaxed">取决于压缩质量。质量 0.8 以上的 JPG 通常人眼很难分辨差异；0.6-0.8 适合网络传输，体积小且质量可接受；低于 0.5 会出现较明显的模糊和色块。建议先用预览功能对比效果，找到可接受的质量平衡点。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">支持哪些浏览器？</h3>
+          <p class="text-sm text-muted leading-relaxed">推荐使用最新版的 Chrome、Edge、Firefox、Safari 浏览器。所有现代浏览器都支持 Canvas API 和 WebP 格式。IE 浏览器不被支持。移动端浏览器也可以使用，但操作体验不如桌面端理想。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">怎么把快捷裁剪比例设为默认？</h3>
+          <p class="text-sm text-muted leading-relaxed">目前快捷裁剪是点击后即时应用到当前选中的图片。如果你常用某个比例，可以在上传图片后，先点击对应的快捷裁剪按钮，再进行其他调整。后续版本会考虑增加默认裁剪比例的设置项。</p>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="font-display font-semibold text-base mb-2">可以离线使用吗？</h3>
+          <p class="text-sm text-muted leading-relaxed">可以。首次加载后，浏览器会缓存页面资源。你可以将网页保存为书签，或者在 Chrome 中选择「安装应用」将其安装为桌面应用，之后即使没有网络也能正常打开使用。所有功能均不依赖网络连接。</p>
+        </div>
+      </div>
+    </section>
+
     <section id="support" class="max-w-7xl mx-auto px-5 sm:px-8 py-16">
       <div class="text-center max-w-xl mx-auto mb-12">
         <h2 class="font-display text-3xl sm:text-4xl font-bold tracking-tight">支持 PixelCraft</h2>
@@ -782,6 +944,11 @@
               <a href="mailto:zhangxl_kx@163.com" class="inline-flex items-center gap-1.5 transition hover:opacity-80 break-all" style="color:var(--accent)">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                 zhangxl_kx@163.com
+              </a>
+            </li>
+            <li>
+              <a href="privacy.html" class="inline-flex items-center gap-1.5 transition hover:opacity-80" style="color:var(--accent)">
+                隐私政策
               </a>
             </li>
           </ul>
@@ -2138,6 +2305,21 @@
       el.appendChild(wrap);
     }
 
+    // 动态加载 AdSense 脚本（仅在配置了至少一个广告位时才加载）
+    function loadAdsenseScript(pubId, callback){
+      if (window.adsbygoogle) { callback && callback(); return; }
+      var meta = document.createElement('meta');
+      meta.name = 'google-adsense-account';
+      meta.content = pubId;
+      document.head.appendChild(meta);
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + pubId;
+      s.crossOrigin = 'anonymous';
+      s.onload = function(){ callback && callback(); };
+      document.head.appendChild(s);
+    }
+
     // 渲染单个 AdSense 广告单元
     function renderAdsense(el, slotId, pubId, format){
       if (!el || !slotId) return;
@@ -2154,11 +2336,14 @@
     }
 
     var ads = cfg.adsense || {}, pro = cfg.propeller || {};
+    var hasAdsenseSlot = ads.publisherId && (ads.bannerSlot || ads.sidebarSlot);
 
-    // 方案A：Google AdSense —— 广告脚本已通过 <head> 中的静态标签加载，渲染各广告单元
-    if (ads.publisherId){
-      renderAdsense($('#ad-banner'), ads.bannerSlot, ads.publisherId, 'horizontal');
-      renderAdsense($('#supportAd'), ads.sidebarSlot, ads.publisherId, 'mediumRectangle');
+    // 方案A：Google AdSense —— 仅在配置了具体广告位时才加载脚本并渲染
+    if (hasAdsenseSlot){
+      loadAdsenseScript(ads.publisherId, function(){
+        renderAdsense($('#ad-banner'), ads.bannerSlot, ads.publisherId, 'horizontal');
+        renderAdsense($('#supportAd'), ads.sidebarSlot, ads.publisherId, 'mediumRectangle');
+      });
     }
 
     // 方案B：PropellerAds / Monetag —— 仅填充 AdSense 未占用的位置（互补填充）
