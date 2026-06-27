@@ -1,0 +1,18 @@
+{
+  "name": "PixelCraft · 极简图片处理工具",
+  "short_name": "PixelCraft",
+  "description": "纯前端在线图片处理工具：裁剪、压缩、格式转换、EXIF 隐私抹除，全部在浏览器本地完成。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F4F4F1",
+  "theme_color": "#0EA57E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
