@@ -490,6 +490,7 @@
         </div>
         <div class="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-faint font-mono">
           <span>JPG · PNG · WebP · BMP</span><span>·</span>
+          <span>翻转 · 旋转</span><span>·</span>
           <span>ZIP 批量导出</span>
         </div>
       </div>
@@ -552,6 +553,29 @@
               <button class="chip justify-center active" data-format="image/jpeg">JPG</button>
               <button class="chip justify-center" data-format="image/png">PNG</button>
               <button class="chip justify-center" data-format="image/webp">WebP</button>
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-3">图片翻转</label>
+            <div class="flex items-center gap-2 mb-4">
+              <button id="flipHBtn" class="chip justify-center flex-1 py-2" title="左右翻转">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6l-4 6 4 6"/><path d="M12 6l4 6-4 6"/><path d="M3 12h2"/><path d="M19 12h2"/></svg>
+              </button>
+              <button id="flipVBtn" class="chip justify-center flex-1 py-2" title="上下翻转">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12l6-4 6 4"/><path d="M6 12l6 4 6-4"/><path d="M12 3v2"/><path d="M12 19v2"/></svg>
+              </button>
+            </div>
+            <div class="flex items-center justify-between mb-3">
+              <label class="text-xs font-semibold text-muted uppercase tracking-wider">旋转角度</label>
+              <span id="rotationValue" class="font-mono text-sm text-accent font-semibold">0°</span>
+            </div>
+            <input id="rotationRange" type="range" min="0" max="360" step="1" value="0" class="range" />
+            <div class="grid grid-cols-4 gap-2 mt-3">
+              <button class="rotation-snap chip justify-center text-xs py-1.5 active" data-angle="0">0°</button>
+              <button class="rotation-snap chip justify-center text-xs py-1.5" data-angle="90">90°</button>
+              <button class="rotation-snap chip justify-center text-xs py-1.5" data-angle="180">180°</button>
+              <button class="rotation-snap chip justify-center text-xs py-1.5" data-angle="270">270°</button>
             </div>
           </div>
 
@@ -692,7 +716,7 @@
             <div class="w-9 h-9 rounded-xl glass flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg></div>
             <h3 class="font-display font-semibold text-base">格式自由</h3>
           </div>
-          <p class="text-sm text-muted leading-relaxed">JPG / PNG / WebP 互转，裁剪尺寸，压缩质量从 0.1 到 1.0 精细可控。</p>
+          <p class="text-sm text-muted leading-relaxed">翻转、旋转、JPG / PNG / WebP 互转，裁剪尺寸，压缩质量精细可控。</p>
         </div>
         <div class="glass rounded-3xl p-5 hover:-translate-y-1 transition-transform">
           <div class="flex items-center gap-3 mb-2">
@@ -889,6 +913,9 @@
     reprocessTimer: null,
     processing: false,
     quickCropRatio: null,
+    flipH: false,
+    flipV: false,
+    rotation: 0,
   };
 
   const els = {
@@ -958,6 +985,11 @@
     cropCancel: $('#cropCancel'),
     cropReset: $('#cropReset'),
     cropRatio: document.querySelectorAll('.crop-ratio'),
+    flipHBtn: $('#flipHBtn'),
+    flipVBtn: $('#flipVBtn'),
+    rotationRange: $('#rotationRange'),
+    rotationValue: $('#rotationValue'),
+    rotationSnaps: document.querySelectorAll('.rotation-snap'),
   };
 
   const uid = () => Math.random().toString(36).slice(2, 9);
@@ -1237,7 +1269,7 @@
     return new Blob([result], { type: 'image/png' });
   }
 
-  async function processImage(file, format, quality, pngColors, crop) {
+  async function processImage(file, format, quality, pngColors, crop, flipH, flipV, rotation) {
     const { drawable, width, height, close } = await getDrawable(file);
     const canvas = document.createElement('canvas');
     let sx = 0, sy = 0, sw = width, sh = height;
@@ -1247,14 +1279,23 @@
       sw = Math.min(width - sx, crop.w);
       sh = Math.min(height - sy, crop.h);
     }
-    canvas.width = Math.max(1, sw);
-    canvas.height = Math.max(1, sh);
+    const rad = (rotation || 0) * Math.PI / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    const outW = Math.max(1, Math.round(sw * cos + sh * sin));
+    const outH = Math.max(1, Math.round(sh * cos + sw * sin));
+    canvas.width = outW;
+    canvas.height = outH;
     const ctx = canvas.getContext('2d');
     if (format === 'image/jpeg') {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    ctx.drawImage(drawable, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+    ctx.translate(outW / 2, outH / 2);
+    if (rotation) ctx.rotate(rad);
+    ctx.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    ctx.drawImage(drawable, sx, sy, sw, sh, -sw / 2, -sh / 2, sw, sh);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     close();
 
     if (format === 'image/png' && pngColors && pngColors <= 256) {
@@ -1491,7 +1532,7 @@
       updateCard(item);
       updateSummary();
       try {
-        item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null, item.crop);
+        item.result = await processImage(item.file, state.format, state.quality, state.format === 'image/png' ? state.pngColors : null, item.crop, state.flipH, state.flipV, state.rotation);
         item.resultUrl = URL.createObjectURL(item.result.blob);
         item.status = 'done';
         item.error = null;
@@ -1937,6 +1978,53 @@
     els.qualityPresets.forEach((b) => b.addEventListener('click', () => setQuality(parseFloat(b.dataset.q))));
     els.pngPresets.forEach((b) => b.addEventListener('click', () => setColors(parseInt(b.dataset.colors, 10))));
 
+    els.flipHBtn.addEventListener('click', () => {
+      state.flipH = !state.flipH;
+      els.flipHBtn.classList.toggle('active', state.flipH);
+      scheduleReprocess();
+    });
+    els.flipVBtn.addEventListener('click', () => {
+      state.flipV = !state.flipV;
+      els.flipVBtn.classList.toggle('active', state.flipV);
+      scheduleReprocess();
+    });
+
+    function setRotSliderFill() {
+      const v = parseInt(els.rotationRange.value, 10);
+      const pct = (v / 360) * 100;
+      els.rotationRange.style.setProperty('--pct', pct + '%');
+    }
+
+    function updateRotationSnaps(angle) {
+      els.rotationSnaps.forEach((b) => b.classList.toggle('active', parseInt(b.dataset.angle, 10) === angle));
+    }
+
+    els.rotationRange.addEventListener('input', (e) => {
+      let v = parseInt(e.target.value, 10);
+      const snaps = [0, 90, 180, 270, 360];
+      for (const s of snaps) {
+        if (Math.abs(v - s) <= 3) { v = s; break; }
+      }
+      state.rotation = v % 360;
+      els.rotationRange.value = state.rotation;
+      els.rotationValue.textContent = state.rotation + '°';
+      setRotSliderFill();
+      updateRotationSnaps(state.rotation);
+      scheduleReprocess();
+    });
+
+    els.rotationSnaps.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const angle = parseInt(btn.dataset.angle, 10);
+        state.rotation = angle;
+        els.rotationRange.value = angle;
+        els.rotationValue.textContent = angle + '°';
+        setRotSliderFill();
+        updateRotationSnaps(angle);
+        scheduleReprocess();
+      });
+    });
+
     els.keepNameToggle.addEventListener('click', () => {
       state.keepName = !state.keepName;
       els.keepNameToggle.classList.toggle('on', state.keepName);
@@ -2095,6 +2183,8 @@
     initTheme();
     setFormat(state.format);
     setQuality(state.quality);
+    els.rotationRange.value = state.rotation;
+    els.rotationRange.style.setProperty('--pct', '0%');
     bindEvents();
     initLightboxDrag();
     initCropDrag();
